@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>投稿</title>
+    <style>
+        *{
+            margin: 15px;
+        }
+        span{
+            font-size: 1.4rem;
+            color: rgb(85, 57, 211);
+            font-family: 楷体;
+            font-weight: 700;
+            margin-left: 0;
+        }
+        select{
+            width: 100px;
+            height: 30px;
+            font-family: 楷体;
+            font-size: 1.1rem;
+            font-weight: 300;
+            color: rgb(197, 65, 83);
+            margin-left: 20px;
+        }
+        option{
+            font-family: 楷体;
+            font-size: 1.1rem;
+            font-weight: 300;
+            color: rgb(56, 107, 107);
+
+        }
+        input[type="file"]{
+            border-radius: 5px;
+            width: 250px;
+            height: 30px;
+            color: rgb(238, 207, 68);
+            font-family: 楷体;
+            font-size: 1.1rem;
+            outline: none;
+            margin-left: 20px;
+        }
+        input[type='text']{
+            width: 200px;
+            height: 25px;
+            border-radius: 3px;
+            outline: none;
+            color: red;
+            font-family: 楷体;
+            font-size: 1.1rem;
+            padding: 2px;
+            margin-left: 20px;
+        }
+        button{
+            width: 80px;
+            height: 30px;
+            font-family: 楷体;
+            font-size: 1.1rem;
+            color: rgb(10, 10, 10);
+            background-color:gray;
+            border-radius: 5px;
+            outline: none;
+            border-style: groove;
+        }
+        button:hover{
+            background-color: rgb(117, 235, 235);
+        }
+        div{
+            border: 2;
+            margin-left: 40%;
+        }
+        span{
+            font-family: 楷体;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: rgb(25, 204, 85);
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+            <span>设置标题</span><br>
+            <input type="text" name="title"><br>
+            <span>选择封面</span><br>
+            <input type="file" accept=".jpg,.jpeg,.gif" name="cover"><br>
+            <span>选择类型</span><br>
+            <select name="type">
+                <option value="游戏">游戏</option>
+                <option value="美食">美食</option>
+                <option value="科技">科技</option>
+                <option value="生活">生活</option>
+                <option value="娱乐">娱乐</option>
+            </select><br>
+            <span>选择视频</span><br>
+            <input type="file" accept=".mp4,.ogg" name="video"><br>
+            <button type="submit">提交</button>
+        </form>
+        <span>{{ resp_code }}</span>
+    </div>
+
+</body>
+</html>

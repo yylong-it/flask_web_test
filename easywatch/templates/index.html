@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>EasyWatch</title>
+    <link rel="stylesheet" href="../static/css/index.css">
+    <script src="../static/js/jquery-3.4.1.min.js"></script>
+    <script>
+
+        window.onload = function(){
+            //自动加载首页
+            $.ajax({
+                url:"{{ url_for('first_page') }}",
+                type:'GET',
+                success:function(data){
+                    $('#index_frame').contents().find('body').html(data)
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    {% if user is none %}
+        <div id="div_head">
+            <a href="/goto_login" id="login_a">登录</a>
+            <a href="/goto_upload" id="upload_a" target="blank">投稿</a>
+        </div>
+    {% else %}
+        <div id="div_head">
+            <a href="/goto_userCenter?uid={{ user[0] }}" id="login_a" target="blank" style="font-size: 0.7rem;
+                color: rgb(240, 146, 146)">{{ user[1] }}</a>                
+            <a href="/goto_upload" id="upload_a" target="blank">投稿</a>                
+        </div>
+    {% endif %}
+    <div id="div_title">
+        <form action="">
+           <input type="text" id="search_input">
+           <input type="submit" value="搜索" id="sub_input"> 
+        </form>   
+    </div>
+    <div id="div_table">
+        <table style="border-collapse:collapse">
+            <th>
+                <a href="/first_page" target="index_frame" class="a_sort">首页</a>
+            </th>
+            <th>
+                <a href="/sortByType?type='游戏'" target="index_frame" class="a_sort">游戏</a>
+            </th>
+            <th>
+                <a href="/sortByType?type='美食'" target="index_frame" class="a_sort">美食</a>
+            </th>
+            <th>
+                <a href="/sortByType?type='科技'" target="index_frame" class="a_sort">科技</a>
+            </th>
+            <th>
+                <a href="/sortByType?type='生活'" target="index_frame" class="a_sort">生活</a>
+            </th>
+            <th>
+                <a href="/sortByType?type='娱乐'" target="index_frame" class="a_sort">娱乐</a>
+            </th>
+        </table>
+    </div>
+    <iframe src="" frameborder="0" name="index_frame" id="index_frame">
+    </iframe>
+</body>
+</html>

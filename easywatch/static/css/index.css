@@ -1,0 +1,95 @@
+*{
+    margin: 0;
+}
+
+#div_head{
+    width: 100%;
+    height: 50px;
+    background-image: url("../images/bg_title.gif");
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#div_title{
+    width: 100%;
+    height: 120px;
+    font-size: 0;  /* 去除两个input之间的空隙 */
+    background: url('../images/index_title.jpg') no-repeat;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#login_a, #upload_a{
+    color: rgb(235, 238, 77);
+    font-size: 1.2rem;
+    font-family: '楷体', 'Courier New', Courier, monospace;
+}
+
+.a_sort{
+    letter-spacing: 3px;
+    font-weight: 1.1rem;
+    font-size: 1.5rem;
+    color: hsl(123, 65%, 50%);
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+#login_a{
+    margin-left: 65%;
+    padding-right: 20px;
+}
+
+#search_input{
+    width: 180px;
+    height: 28px;
+    border: 1 1 1 0 inherit yellow;
+    font-size: 0.9rem;
+    text-align: center;
+    border: 0;
+    outline: none;
+}
+
+#sub_input{
+    width: 50px;
+    height: 30px;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    color: #3b3b35d7;
+    border: 0;
+    outline: none;
+}
+
+#sub_input:hover{
+    background-color: rgba(204, 89, 54, 0.973);
+}
+
+div > a:hover{
+    color: rgb(68, 243, 52);
+}
+
+a:hover{
+    color: red;
+}
+
+table{
+    width: 100%;
+}
+
+a{
+    text-decoration: none;
+}
+th{
+    font-size: 1.3rem;
+    color: rgb(150, 84, 211);
+}
+#div_table{
+    margin-top: 15px;
+}
+#index_frame{
+    width: 90%;
+    height: 520px;
+    margin-top: 10px;
+    margin-left: 5%;
+}

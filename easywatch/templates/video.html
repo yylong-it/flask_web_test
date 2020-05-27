@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>EasyWatch</title>
+    <style>
+        #video_div{
+            width: 60%;
+            height: 60%;
+            margin-left: 10%;
+            margin-top: 100px;
+        }
+
+        #comment_p{
+            font-size: 1.5rem;
+            color: rgb(156, 116, 67);
+            font-weight: 800;
+        }
+
+        img{
+            width: 55px;
+            height: 55px;
+        }
+        #comment_div{
+            margin-left: 10%;
+            margin-top: 30px;  
+        }
+        a{
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: rgb(95, 116, 103);
+        }
+        #comment{
+            width: 500px;
+            height: 70px;
+            outline: none;
+            border-radius: 5px;
+            border-color: rgb(91, 219, 176);
+            border: 2;
+            padding: 2px;
+            font-size: 1.3rem;
+        }
+        #submit{
+            width: 90px;
+            height: 70px;
+            border-radius: 10px;
+            border-style: none;
+            outline: none;
+            font-size: 1.3rem;
+            color: rgb(15, 15, 15);
+            background-color: rgb(184, 182, 181);
+            font-family: 宋体;
+        }
+        #submit:hover{
+            background-color: rgb(177, 236, 169);
+        }
+        span{
+            display: block;
+            padding-bottom: 20px;
+            margin-left: 30px;
+            font-size: 1.3rem;
+            font-weight: 400;
+            font-family: 楷体;
+            color: rgb(14, 13, 13);
+       }
+       #comm_cnt{
+           display: inline;
+           color: rgb(17, 192, 40);
+           font-size: 1.4rem;
+           font-weight: 300;
+           margin: 5px;
+           font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+       }
+    </style>
+    <script src="../static/js/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+
+    <div id="video_div">
+        <span>{{ video[2] }}</span>
+        <video src="{{ video[5] }}" controls = "true" style="width:100%; height:100%; object-fit: fill"></video>
+        <div id="up_div">
+            <a href=""><img src="../static/images/good.gif" alt="赞我哦" title="喜欢就点赞吧"></a>{{ video[7] }}
+
+        </div>
+    </div>
+    <div id="comment_div">
+        <p id="comment_p"><span id="comm_cnt">{{ comment_count }}</span>评论</p>
+        <a href="">按时间排序</a><br>
+
+        <form action="/add_comment" method="POST">
+            <div style="display: inline-flex;align-items: center;letter-spacing: 3px;margin: 3px;">
+                <input type="text" hidden value="{{ video[0] }}" name="vid">
+                <textarea id="comment" rows="20" cols="20" name="comment"></textarea>
+                <input type="submit" value="发表评论" id="submit">
+            </div>
+        </form>
+
+        {% for comment in comments %}
+        <p>{{ comment[1] }}</p>
+        <p>{{ comment[2] }}</p>
+        <p>{{ comment[3] }}</p>
+        <hr>
+        {% endfor %}
+
+    </div>
+
+</body>
+</html>

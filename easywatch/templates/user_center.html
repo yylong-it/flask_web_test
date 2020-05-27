@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心</title>
+    <style>
+        #div_iframe{
+            float:right;
+            width: 90%;
+            height: 900px;
+        }
+        #div_leftbox{
+            width: 10%;
+            height: 900px;
+            display:inline-block;
+            background-color: rgba(211, 209, 209, 0.897);
+            text-align: center;
+        }
+        iframe{
+            width: 100%;
+            height: 100%;
+        }
+        a{
+            text-decoration: none;
+            font-size: 1.1rem;
+            font-family: 楷体,Arial, Helvetica, sans-serif;
+            color: grey;
+            letter-spacing: 3px;
+            margin-top: 10px;;
+        }
+        a:hover{
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div style="border: red;">
+        <p>个人中心</p>
+    </div>
+    <div id="div_leftbox">
+        <br>
+        <a href="" target="iframe_msg" class="center_msg">个人信息</a><br><br>
+        <a href="" target="iframe_msg" class="center_msg">浏览记录</a>
+    </div>
+    <div id="div_iframe">
+        <iframe src="" frameborder="1" id="iframe_msg"></iframe>
+    </div>
+</body>
+</html>

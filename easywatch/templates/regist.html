@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册</title>
+    <style>
+        *{
+            margin: 5px;
+        }
+        body{
+            background-color: rgb(197, 165, 143);
+        }
+        #reg_div{
+           margin-top: 10%; 
+        }
+        input{
+            font-family: 楷体;
+            font-size: 1.2rem;
+            font-weight: 200;
+            text-align: center;
+            border-radius: 5px;
+            border-style:groove;
+            outline: none;
+            margin-left: 40%;
+        }
+        input[type='submit']{
+            margin-left: 45%;
+        }
+        input[type='submit']:hover{
+            background-color: aqua;
+        }
+        .warn-msg{
+            color: rgb(233, 51, 66);
+        }
+    </style>
+</head>
+<body>
+    <div id="reg_div">
+        <form action="/regist" method="POST">
+            <input type="text" id="regist_name" name="regist_name" placeholder="用户名" maxlength="6" minlength="3">
+            <span style="color:red">*</span><span class="warn-msg">3-6个字符</span>
+            <br>
+            <input type="password" id="regist_pass" name="regist_pass" placeholder="密码" maxlength="12" minlength="6">
+            <span></span>
+            <span style="color:red">*</span><span class="warn-msg">6-12个字符</span>
+            <br>
+            <input type="submit" value="注册并登陆">
+        </form> 
+    </div>
+
+    
+</body>
+</html>
