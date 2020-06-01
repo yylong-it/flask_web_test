@@ -13,18 +13,40 @@
             text-align: center;
             margin-top: 5%;
         }
+        #u_name, #u_pass{
+            text-align: center;
+            width: 170px;
+            height: 26px;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            border-radius: 5px;
+            border-style: none;
+            outline: none;
+        }
+        #submit{
+            background-color: rgb(185, 187, 184);
+            width: 50px;
+            height: 25px;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            border-radius: 3px;
+            border-style: none;
+        }
+        #reg_link{
+            color: rgb(5, 0, 0);
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body style="background-color: rgb(228, 205, 163);">
     <div id="div_body">
         <div>
             <form action="/user_login" method="POST">
-                <input type="text" name="user_name" id="u_name"/><br>
-                <input type="password" name="user_pass" id="u_pass"><br>
+                <input type="text" name="user_name" id="u_name" placeholder="用户名"/><br>
+                <input type="password" name="user_pass" id="u_pass" placeholder="密码"><br>
                 <input type="submit" value="登录" id="submit">
             </form>        
         </div>
-        <div>
+        <div style="padding-top: 8px;">
             <a href="/goto_reg" id="reg_link">没有账号？注册</a>
         </div>
     </div>

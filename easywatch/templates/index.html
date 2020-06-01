@@ -31,7 +31,9 @@
         <div id="div_head">
             <a href="/goto_userCenter?uid={{ user[0] }}" id="login_a" target="blank" style="font-size: 0.7rem;
                 color: rgb(240, 146, 146)">{{ user[1] }}</a>                
-            <a href="/goto_upload" id="upload_a" target="blank">投稿</a>                
+            <a href="/goto_upload" id="upload_a" target="blank">投稿</a> 
+            <a href="/unlogin" id="unlogin_a" style="padding-left: 20px;text-decoration: none;font-size: 1.1rem;
+                color: rgb(170, 50, 50);font-family: 楷体,Arial, Helvetica, sans-serif;" >退出</a>               
         </div>
     {% endif %}
     <div id="div_title">

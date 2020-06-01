@@ -6,8 +6,8 @@ import hashlib
 import re
 
 app = Flask(__name__)
-app.config['upload_folder'] = r"D:/code_python/easywatch/video/"  # 上线需要更改路径
 app.config['SECRET_KEY'] = os.urandom(24)  # 配置session的secret_key
+base_dir = os.path.abspath(os.path.dirname('__file__'))
 
 
 # 获取数据库连接
@@ -90,6 +90,12 @@ def login():
         msg = "登录失败"
         return msg
 
+# 退出登录
+@app.route('/unlogin', methods=['GET'])
+def unlogin():
+    del session['user']
+    return redirect(url_for('index'))
+
 # 实现注册
 @app.route('/regist', methods=['post'])
 def regist():
@@ -121,8 +127,17 @@ def regist():
 # 个人中心
 @app.route('/goto_userCenter', methods=['get'])
 def user_center():
-    uid = request.args.get('uid')
-    return '欢迎' + uid
+    uid_args = request.args.get('uid')
+
+    # 判断当前url携带的UID是否为session中的UID，做个人中心的访问控制
+    uid = str(session.get('user')[0]) # 类型转换成相同
+
+    if uid == uid_args:
+        return '欢迎' + uid
+    else:
+        return '不可访问他人个人中心'
+
+
 
 # 首页自动加载的视频封面
 @app.route('/first_page')
@@ -201,24 +216,25 @@ def upload():
 
         cover = request.files["cover"]
         cover_name = cover.filename
-        cover_path = os.path.join(app.config['upload_folder'],
-                                  'cover/' + cover_name)
+        cover_path = base_dir + "/video/cover/" + cover_name
         cover.save(cover_path)
 
         vtype = request.form.get("type")
 
         video = request.files["video"]
         video_name = video.filename
-        video_path = os.path.join(app.config['upload_folder'],
-                                  'content/' + video_name)
+        video_path = base_dir + "/video/content/" + video_name
         video.save(video_path)
 
         print(vtitle, cover_path, vtype, video_path)
         conn = get_conn()
         cur = conn.cursor()
+
+        # 从session中获取当前登录用户的UID信息
+        uid = session.get('user')[0]
         cur.execute(
-            "insert into video(uid,vtitle,vcoverurl,vtype,vurl) values(1001,'%s','%s','%s','%s')"
-            % (vtitle, cover_path, vtype, video_path))
+            "insert into video(uid,vtitle,vcoverurl,vtype,vurl) values(%d,'%s','%s','%s','%s')"
+            % (uid, vtitle, cover_path, vtype, video_path))
         conn.commit()
         resp_code = "上传成功"
 
@@ -241,12 +257,15 @@ def add_comment():
     vid = int(vid)
     comment = request.form.get('comment')
     print(vid, comment)
+
+    # 从session中获取当前用户的id和用户名信息、
+    user_info = session.get('user')
     try:
         conn = get_conn()
         cur = conn.cursor()
         cur.execute(
-            "insert into tb_comment(vid,uname,comm) values(%d,'张三','%s')" %
-            (vid, comment))
+            "insert into tb_comment(vid,uid,uname,comm) values(%d,%d,'%s','%s')" %
+            (vid, user_info[0], user_info[1], comment))
         conn.commit()
     except Exception as e:
         conn.rollback()

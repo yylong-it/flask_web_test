@@ -29,7 +29,7 @@
     <!-- 上线src={{ cover[2] }} -->
     {% for cover in covers %}
     <div>
-        <a href="/video?vid={{ cover[0] }}" target="blank" ><img src="../static/images/8.jpg" alt="图片"></a><br>
+        <a href="/video?vid={{ cover[0] }}" target="blank" ><img src="{{ cover[2] }}" alt="图片"></a><br>
         <a href="/video?vid={{ cover[0] }}" target="blank">{{ cover[1] }}</a>
     </div>
     {% endfor %}
