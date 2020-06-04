@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, session, url_for
+from flask import Flask, request, render_template, redirect, session, url_for, flash
 import pymysql
 import os
 import json
@@ -31,7 +31,8 @@ def index():
 @app.before_request
 def before_request():
     # 如果访问登录注册或者是静态资源，放行
-    allow_path = ('/', '/goto_login', '/goto_reg', '/user_login', '/regist', '/first_page','/favicon.ico', '/sortByType')
+    allow_path = ('/', '/goto_login', '/goto_reg', '/user_login', '/regist', '/first_page','/favicon.ico', '/sortByType',
+                    '/uname_repeat_verify')
     if request.path in allow_path or re.match(r'^(/static/)|(/video/)*[.][a-z]*$', request.path):
         return None
     user = session.get('user')
@@ -96,33 +97,73 @@ def unlogin():
     del session['user']
     return redirect(url_for('index'))
 
-# 实现注册
-@app.route('/regist', methods=['post'])
-def regist():
-    reg_name = request.form.get('regist_name')
-    reg_pass = request.form.get('regist_pass')
-    msg = "注册失败"
-    try:
-        conn=get_conn()
-        cur=conn.cursor()
-        
-        # md5对密码进行加密
-        m = hashlib.md5()
-        m.update(reg_pass.encode(encoding='utf-8'))
-        m_pass = m.hexdigest()
-        print(reg_name,m_pass)
-        cur.execute("insert into user(uname, upass) values('%s','%s')" %(reg_name, m_pass))
-        conn.commit()
-        msg = "注册成功"
+# 用户名重复性校验
+@app.route('/uname_repeat_verify', methods=['post'])
+def uname_repeat_verify():
 
+    reg_name = request.form.get('reg_name')
+    msg = "验证通过"
+
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+
+        cur.execute("select uid from user where uname='%s'"%(reg_name))
+        flag = cur.fetchone()
+        print(flag)
+
+        if flag:
+            msg = "用户名重复"
+            return msg
+            
+        return msg
     except Exception as e:
-        conn.rollback()
-        print(e, msg)
+        print(e)
     finally:
         cur.close()
-        conn.close()
+        conn.close()    
 
-    return msg
+# 实现注册
+@app.route('/regist', methods=['POST','GET'])
+def regist():
+
+    if request.method == 'POST':
+        reg_name = request.form.get('regist_name')
+        reg_pass = request.form.get('regist_pass')
+
+        # 对输入的数据做校验
+        if len(reg_name) <3 or len(reg_pass)<3:
+            flash('输入正确的格式')
+            return redirect(url_for('goto_regist'))
+        
+        try:
+            conn=get_conn()
+            cur=conn.cursor()
+            
+            # md5对密码进行加密
+            m = hashlib.md5()
+            m.update(reg_pass.encode(encoding='utf-8'))
+            m_pass = m.hexdigest()
+            print(reg_name,m_pass)
+            cur.execute("insert into user(uname, upass) values('%s','%s')" %(reg_name, m_pass))
+            conn.commit()
+
+            # 注册成功后需要自动登录，查询用户ID，故需要做用户名唯一性校验
+            cur.execute("select uid from user where uname='%s'"%(reg_name,))
+            uid = cur.fetchone()[0]
+
+            # 将用户信息存入session中
+            session['user'] = (uid, reg_name)
+            return render_template('index.html', user=session['user'])
+
+        except Exception as e:
+            conn.rollback()
+            print(e)
+        finally:
+            cur.close()
+            conn.close()
+
+    return redirect(url_for('goto_regist'))
 
 # 个人中心
 @app.route('/goto_userCenter', methods=['get'])
@@ -136,7 +177,6 @@ def user_center():
         return '欢迎' + uid
     else:
         return '不可访问他人个人中心'
-
 
 
 # 首页自动加载的视频封面
@@ -216,14 +256,20 @@ def upload():
 
         cover = request.files["cover"]
         cover_name = cover.filename
-        cover_path = base_dir + "/video/cover/" + cover_name
+        # 封面在服务器上的存储路径
+        cover_path = base_dir + "/static/video/cover/" + cover_name
+        # 封面存入数据库的URL，相对地址，避免前端页面找不到路径
+        cover_url = os.path.join("../static/video/cover/", cover_name)
         cover.save(cover_path)
 
         vtype = request.form.get("type")
 
         video = request.files["video"]
         video_name = video.filename
-        video_path = base_dir + "/video/content/" + video_name
+        # 视频上传的服务器存储路劲
+        video_path = base_dir + "/static/video/content/" + video_name
+        # 存入数据库的URL
+        video_url = os.path.join("../static/video/content/", video_name)
         video.save(video_path)
 
         print(vtitle, cover_path, vtype, video_path)
@@ -234,7 +280,7 @@ def upload():
         uid = session.get('user')[0]
         cur.execute(
             "insert into video(uid,vtitle,vcoverurl,vtype,vurl) values(%d,'%s','%s','%s','%s')"
-            % (uid, vtitle, cover_path, vtype, video_path))
+            % (uid, vtitle, cover_url, vtype, video_url))
         conn.commit()
         resp_code = "上传成功"
 

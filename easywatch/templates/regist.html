@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>注册</title>
+    <script src="../static/js/jquery-3.4.1.min.js"></script>
     <style>
         *{
             margin: 5px;
@@ -30,23 +31,60 @@
         input[type='submit']:hover{
             background-color: aqua;
         }
-        .warn-msg{
-            color: rgb(233, 51, 66);
-        }
     </style>
+    <script>
+        $(document).ready(function(){
+
+            // jQuery ajax添加用户名重复性校验
+            $('#regist_name').blur(function(){
+                var reg_name = $('#regist_name').val();
+                $.ajax({
+                    url:"{{ url_for('uname_repeat_verify') }}",
+                    data:{'reg_name':reg_name},
+                    type:'post',
+                    success:function(msg){
+                        console.log(msg)
+                        $('#ver_uname_msg').text(msg);
+
+                        if(msg=="验证通过"){    
+                            $('#ver_uname_msg').css("color","green");
+                            console.log($('#sub').attr("disabled"))
+
+                            if($('#sub').attr("disabled") == "disabled"){
+                                $('#sub').removeAttr("disabled");
+                            }
+                        }else{
+                            $('#ver_uname_msg').css("color","red");
+                            $('#sub').attr("disabled",true)
+                        }
+                    }
+            });
+            });
+
+            
+        });
+        
+    </script>
 </head>
 <body>
     <div id="reg_div">
         <form action="/regist" method="POST">
-            <input type="text" id="regist_name" name="regist_name" placeholder="用户名" maxlength="6" minlength="3">
-            <span style="color:red">*</span><span class="warn-msg">3-6个字符</span>
+            <input type="text" id="regist_name" name="regist_name" placeholder="用户名" maxlength="6" minlength="3" title="*3-6个字符">
+            <p style="display: inline;font-size: 0.9rem;" id="ver_uname_msg"></p>
             <br>
-            <input type="password" id="regist_pass" name="regist_pass" placeholder="密码" maxlength="12" minlength="6">
-            <span></span>
-            <span style="color:red">*</span><span class="warn-msg">6-12个字符</span>
+            <input type="password" id="regist_pass" name="regist_pass" placeholder="密码" maxlength="12" minlength="6" title="*6-12个字符">
             <br>
-            <input type="submit" value="注册并登陆">
+            <input type="submit" value="注册并登陆" id="sub">
         </form> 
+    </div>
+    <div>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages%}
+                    {{ message }}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
     </div>
 
     
