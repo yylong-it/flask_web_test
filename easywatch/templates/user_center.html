@@ -40,15 +40,20 @@
     </div>
     <div id="div_leftbox">
         <br>
-        <a href="" target="iframe_msg" class="center_msg">个人信息</a><br><br>
-        <a href="" target="iframe_msg" class="center_msg">精彩评论</a><br><br>
-        <a href="" target="iframe_msg" class="center_msg">爱心点赞</a><br><br>
-        <a href="" target="iframe_msg" class="center_msg">最爱收藏</a><br><br>
-        <a href="" target="iframe_msg" class="center_msg">视频投稿</a><br><br>
-        <a href="" target="iframe_msg" class="center_msg">浏览记录</a><br><br>
+        <a href="/req_user_info" target="iframe_msg" class="center_msg">个人信息</a><br><br>
+        <a href="/req_user_comm" target="iframe_msg" class="center_msg">精彩评论</a><br><br>
+        <a href="/req_user_good" target="iframe_msg" class="center_msg">爱心点赞</a><br><br>
+        <a href="req_user_coll" target="iframe_msg" class="center_msg">最爱收藏</a><br><br>
+        <a href="/req_user_upload" target="iframe_msg" class="center_msg">视频投稿</a><br><br>
+        <a href="/req_user_sub" target="iframe_msg" class="center_msg">关注列表</a><br><br>
+        <a href="/req_user_fans" target="iframe_msg" class="center_msg">粉丝列表</a><br><br>
+        <a href="/req_user_visits" target="iframe_msg" class="center_msg">浏览记录</a><br><br>
+        <!-- 权限限制 管理员可见-->
+        <a href="/req_mgr_vid" target="iframe_msg" class="center_msg">投稿审核</a><br><br>
+        <a href="/req_mgr_reports" target="iframe_msg" class="center_msg">举报审核</a><br><br>
     </div>
     <div id="div_iframe">
-        <iframe src="" frameborder="1" id="iframe_msg"></iframe>
+        <iframe src="" frameborder="1" name="iframe_msg" id="iframe_msg"></iframe>
     </div>
 </body>
 </html>

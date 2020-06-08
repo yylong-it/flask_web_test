@@ -63,15 +63,16 @@ def login():
     msg = "登录失败"
     print(user_name,user_pass)
 
-    # md5加密密码后校验
-    m = hashlib.md5()
-    m.update(user_pass.encode(encoding='utf-8'))
-    md5_pass = m.hexdigest()
+    # # md5加密密码后校验
+    # m = hashlib.md5()
+    # m.update(user_pass.encode(encoding='utf-8'))
+    # md5_pass = m.hexdigest()
     try:
         conn = get_conn()
         cur = conn.cursor()
 
-        cur.execute("select uid,uname from user where uname='%s' and upass='%s'" % (user_name, md5_pass))
+        # 用户状态正常的用户才允许登录
+        cur.execute("select uid,uname,user_right from user where uname='%s' and upass='%s' and user_status=0" % (user_name, user_pass))
         user_info = cur.fetchone()
         print(user_info)
 
@@ -97,7 +98,7 @@ def unlogin():
     del session['user']
     return redirect(url_for('index'))
 
-# 用户名重复性校验
+# ajax请求用户名重复性校验
 @app.route('/uname_repeat_verify', methods=['post'])
 def uname_repeat_verify():
 
@@ -140,20 +141,16 @@ def regist():
             conn=get_conn()
             cur=conn.cursor()
             
-            # md5对密码进行加密
-            m = hashlib.md5()
-            m.update(reg_pass.encode(encoding='utf-8'))
-            m_pass = m.hexdigest()
-            print(reg_name,m_pass)
-            cur.execute("insert into user(uname, upass) values('%s','%s')" %(reg_name, m_pass))
+            cur.execute("insert into user(uname, upass) values('%s','%s')" %(reg_name, reg_pass))
             conn.commit()
 
-            # 注册成功后需要自动登录，查询用户ID，故需要做用户名唯一性校验
-            cur.execute("select uid from user where uname='%s'"%(reg_name,))
+            # 注册成功后需要自动登录，查询用户ID，用户权限,故需要做用户名唯一性校验
+            cur.execute("select uid ,user_right from user where uname='%s'"%(reg_name,))
             uid = cur.fetchone()[0]
+            u_right = cur.fetchone()[1]
 
             # 将用户信息存入session中
-            session['user'] = (uid, reg_name)
+            session['user'] = (uid, reg_name,u_right)
             return render_template('index.html', user=session['user'])
 
         except Exception as e:
@@ -174,7 +171,7 @@ def user_center():
     uid = str(session.get('user')[0]) # 类型转换成相同
 
     if uid == uid_args:
-        return '欢迎' + uid
+        return render_template('/user_center.html')
     else:
         return '不可访问他人个人中心'
 
@@ -182,10 +179,19 @@ def user_center():
 # 首页自动加载的视频封面
 @app.route('/first_page')
 def first_page():
+    # 设置当前的页数，分页查询,存入session
+    # 第一次自动请求为1，后面点击一次换页请求+1
+    if not session.get("page_num"):
+        session['page_num'] = 0
     try:
         conn = get_conn()
         cur = conn.cursor()
-        cur.execute('select vid,vtitle,vcoverurl from video')
+        page_num = int(session.get('page_num'))
+        print(page_num, type(page_num))
+        # 首页自动加载视频状态正常的10条视频,暂且根据点赞数降序筛选
+        cur.execute('select vid,vtitle,vcoverurl from video where vstatus=0 order by vup desc limit %d,10'%(10*page_num,))
+        page_num += 1
+        session['page_num'] = page_num
         covers = cur.fetchall()
         print(covers)
     except Exception as e:
@@ -276,13 +282,14 @@ def upload():
         conn = get_conn()
         cur = conn.cursor()
 
-        # 从session中获取当前登录用户的UID信息
+        # 从session中获取当前登录用户的UID信息,用户名信息
         uid = session.get('user')[0]
+        uname = session.get('user')[1]
         cur.execute(
-            "insert into video(uid,vtitle,vcoverurl,vtype,vurl) values(%d,'%s','%s','%s','%s')"
-            % (uid, vtitle, cover_url, vtype, video_url))
+            "insert into video(uid,uname,vtitle,vcoverurl,vtype,vurl) values(%d,'%s','%s','%s','%s','%s')"
+            % (uid, uname ,vtitle, cover_url, vtype, video_url))
         conn.commit()
-        resp_code = "上传成功"
+        resp_code = "上传成功,等待审核"
 
     except Exception as e:
         conn.rollback()
@@ -320,6 +327,67 @@ def add_comment():
         cur.close()
         conn.close()
     return '添加成功'
+
+# 处理用户中心请求
+# 处理请求用户信息
+@app.route('/req_user_info', methods=['GET'])
+def req_user_info():
+    msg = "用户个人信息"
+    return render_template('/user_center_info.html', msg=msg)
+
+# 处理请求查看评论的信息
+@app.route('/req_user_comm', methods=['GET'])
+def req_user_comm():
+    msg = "我的精彩的评论"
+    return render_template('/user_center_comm.html', msg=msg)
+
+# 处理请求查看点赞的请求
+@app.route('/req_user_good', methods=['GET'])
+def req_user_good():
+    msg = "我的精彩的点赞"
+    return render_template('/user_center_good.html', msg=msg)
+
+# 处理请求收藏的请求
+@app.route('/req_user_coll', methods=['GET'])
+def req_user_coll():
+    msg = "我的收藏夹"
+    return render_template('/user_center_coll.html', msg=msg)
+
+# 处理查看投稿信息的请求
+@app.route('/req_user_upload', methods=['GET'])
+def req_user_upload():
+    msg = "我的投稿信息"
+    return render_template('/user_center_upload.html', msg=msg)
+
+# 处理请求关注列表的请求
+@app.route('/req_user_sub', methods=['GET'])
+def req_user_sub():
+    msg = "我的关注列表"
+    return render_template('/user_center_sub.html', msg=msg)
+
+# 处理请求粉丝列表的请求
+@app.route('/req_user_fans', methods=['GET'])
+def req_user_fans():
+    msg = "我的粉丝列表"
+    return render_template('/user_center_fans.html', msg=msg)
+
+# 处理查看浏览记录表
+@app.route('/req_user_visits', methods=['GET'])
+def req_user_visits():
+    msg = "我的浏览记录"
+    return render_template('/user_center_visits.html', msg=msg)
+
+# 管理员查看投稿审核
+@app.route('/req_mgr_vid', methods=['GET'])
+def req_manager_visits():
+    msg = "我的待审核稿件"
+    return render_template('/user_mgr_vid.html', msg=msg)
+
+# 管理员处理举报信息
+@app.route('/req_mgr_reports', methods=['GET'])
+def req_mgr_reports():
+    msg = "我的待处理举报"
+    return render_template('/user_mgr_reports.html', msg=msg)
 
 
 if __name__ == "__main__":
