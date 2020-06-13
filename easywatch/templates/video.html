@@ -83,8 +83,10 @@
         <span>{{ video[3] }}</span>
         <video src="{{ video[6] }}" controls = "true" style="width:100%; height:100%; object-fit: fill"></video>
         <div id="up_div">
-            <a href=""><img src="../static/images/good.gif" alt="赞我哦" title="喜欢就点赞吧"></a>{{ video[8] }}
-
+            <a href=""><img src="../static/images/good.png" alt="点赞" title="喜欢就点赞吧"></a>
+            <span style="display: inline;">{{ video[8] }}</span>
+            <a href=""><img src="../static/images/coll.png" alt="收藏" title="喜欢就收藏吧"></a>
+            <span style="display: inline;">{{ video[9] }}</span>
         </div>
     </div>
     <div id="comment_div">

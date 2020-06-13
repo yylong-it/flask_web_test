@@ -63,10 +63,6 @@ def login():
     msg = "登录失败"
     print(user_name,user_pass)
 
-    # # md5加密密码后校验
-    # m = hashlib.md5()
-    # m.update(user_pass.encode(encoding='utf-8'))
-    # md5_pass = m.hexdigest()
     try:
         conn = get_conn()
         cur = conn.cursor()
@@ -162,18 +158,11 @@ def regist():
 
     return redirect(url_for('goto_regist'))
 
-# 个人中心
+# 携带uid跳转个人中心，方便做好访问控制，该方法为中间跳转方法，为了可以从多处携带不通的uid访问
 @app.route('/goto_userCenter', methods=['get'])
 def user_center():
-    uid_args = request.args.get('uid')
-
-    # 判断当前url携带的UID是否为session中的UID，做个人中心的访问控制
-    uid = str(session.get('user')[0]) # 类型转换成相同
-
-    if uid == uid_args:
-        return render_template('/user_center.html')
-    else:
-        return '不可访问他人个人中心'
+    uid_args = request.args.get('uid')  
+    return render_template('/user_center.html', uid = uid_args)
 
 
 # 首页自动加载的视频封面
@@ -332,14 +321,49 @@ def add_comment():
 # 处理请求用户信息
 @app.route('/req_user_info', methods=['GET'])
 def req_user_info():
-    msg = "用户个人信息"
-    return render_template('/user_center_info.html', msg=msg)
+    # 查询用户的注册信息
+
+    # 获取url携带的uid
+    uid = int(request.args.get("uid"))
+    # 获取session中的uid
+    sess_uid = int(session.get('user')[0])
+    # 判断登录用户和被访问的用户是否为同一个用户
+    user_flag = None
+    if sess_uid == uid:
+        user_flag = 0
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("select uname,regist_time,user_right,user_status from user where uid=%d"%(uid))
+        user_info = cur.fetchone()
+
+    except Exception as e:
+        print(e)
+    finally:
+        cur.close()
+        conn.close()
+    return render_template('/user_center_info.html',user_info=user_info,user_flag=user_flag,uid=uid)
 
 # 处理请求查看评论的信息
 @app.route('/req_user_comm', methods=['GET'])
 def req_user_comm():
-    msg = "我的精彩的评论"
-    return render_template('/user_center_comm.html', msg=msg)
+    uid = int(request.args.get('uid'))
+    sess_uright = int(session.get('user')[2])
+    # 当前登录的用户为管理员,所有内容可见
+    aviable_flag = None
+    if sess_uright==1:
+        aviable_flag = 0
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("select vid,comm,commtime,commstatus from tb_comment where uid=%d"%uid)
+        user_comms = cur.fetchall()
+    except Exception as e:
+        print(e)
+    finally:
+        cur.close()
+        conn.close()
+    return render_template('/user_center_comm.html',user_comms=user_comms,aviable_flag=aviable_flag)
 
 # 处理请求查看点赞的请求
 @app.route('/req_user_good', methods=['GET'])
@@ -388,6 +412,11 @@ def req_manager_visits():
 def req_mgr_reports():
     msg = "我的待处理举报"
     return render_template('/user_mgr_reports.html', msg=msg)
+
+# 隐私设置
+@app.route("/req_user_privacy" ,methods=['GET'])
+def user_privacy_set():
+    return render_template('/user_center_privacy.html')
 
 
 if __name__ == "__main__":

@@ -6,6 +6,14 @@
     <title>Document</title>
 </head>
 <body>
-    {{  msg }}
+    <div>
+        {% for user_comm in user_comms %}
+            {% if user_comm[3]==0 or aviable_flag %}
+                <div><a href="/video?vid={{ user_comm[0] }}" target="blank">查看视频</a></div>
+                <div><span>{{ user_comm[1] }}</span></div>
+                <div>{{ user_comm[2] }}</div>
+            {% endif %}
+        {% endfor %}
+    </div>
 </body>
 </html>

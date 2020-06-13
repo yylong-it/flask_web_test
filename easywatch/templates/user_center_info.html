@@ -4,8 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        #main_div{
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-    {{ msg }}
+    <div id="main_div">
+        {% if user_info[3]==0 %}
+            <div>用户ID：{{ uid }}</div>
+            <div>用户名：{{ user_info[0] }}</div>
+            <div>注册时间：{{ user_info[1] }}</div>
+            {% if user_info[2]==0 %}
+                <div>用户权限：普通用户</div>
+            {% else %}
+                <div>用户权限：管理员</div>
+            {% endif %}
+            {% if not user_flag %}
+                <div><a href="">修改密码</a></div>
+            {% endif %}
+        {% else %}
+            <div>账号异常</div>
+        {% endif %}
+    </div>
 </body>
 </html>
