@@ -48,10 +48,15 @@
         <a href="/req_user_sub?uid={{ uid }}" target="iframe_msg" class="center_msg">关注列表</a><br><br>
         <a href="/req_user_fans?uid={{ uid }}" target="iframe_msg" class="center_msg">粉丝列表</a><br><br>
         <a href="/req_user_visits?uid={{ uid }}" target="iframe_msg" class="center_msg">浏览记录</a><br><br>
-        <a href="/req_user_privacy?uid={{ uid }}" target="iframe_msg" class="center_msg">隐私设置</a><br><br>
+        <!-- 仅有自己可见-->
+        {% if uid_same==1 %}
+            <a href="/goto_user_setting" target="iframe_msg" class="center_msg">隐私设置</a><br><br>
+        {% endif %}
         <!-- 权限限制 管理员可见-->
-        <a href="/req_mgr_vid" target="iframe_msg" class="center_msg">投稿审核</a><br><br>
-        <a href="/req_mgr_reports" target="iframe_msg" class="center_msg">举报审核</a><br><br>
+        {% if u_right==1 and uid_same==1 %}
+            <a href="/req_mgr_vid" target="iframe_msg" class="center_msg">投稿审核</a><br><br>
+            <a href="/req_mgr_reports" target="iframe_msg" class="center_msg">举报审核</a><br><br>
+        {% endif %}
         
     </div>
     <div id="div_iframe">

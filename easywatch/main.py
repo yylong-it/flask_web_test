@@ -161,8 +161,15 @@ def regist():
 # 携带uid跳转个人中心，方便做好访问控制，该方法为中间跳转方法，为了可以从多处携带不通的uid访问
 @app.route('/goto_userCenter', methods=['get'])
 def user_center():
-    uid_args = request.args.get('uid')  
-    return render_template('/user_center.html', uid = uid_args)
+    uid_args = int(request.args.get('uid'))
+    #从session中获取当前登录用户的权限,登录的ID
+    u_right = int(session.get('user')[2]) 
+    u_id = session.get('user')[0]
+    uid_same = 0
+    if u_id==uid_args:
+        uid_same = 1
+
+    return render_template('/user_center.html', uid = uid_args,u_right=u_right,uid_same=uid_same)
 
 
 # 首页自动加载的视频封面
@@ -326,23 +333,28 @@ def req_user_info():
     # 获取url携带的uid
     uid = int(request.args.get("uid"))
     # 获取session中的uid
-    sess_uid = int(session.get('user')[0])
+    sess_uid = session.get('user')[0]
     # 判断登录用户和被访问的用户是否为同一个用户
-    user_flag = None
+    user_flag = 0
     if sess_uid == uid:
-        user_flag = 0
+        user_flag = 1
     try:
         conn = get_conn()
         cur = conn.cursor()
-        cur.execute("select uname,regist_time,user_right,user_status from user where uid=%d"%(uid))
-        user_info = cur.fetchone()
-
+        # 访问他人的个人中心，需要先查询他人的隐私设置
+        cur.execute("select u_info from tb_pri_setting where uid=%d"%uid)
+        u_info_flag = cur.fetchone()[0]
+        # 如果隐私设置的可见（0）,才进行后面的操作
+        if u_info_flag == 0:
+            cur.execute("select uname,regist_time,user_right,user_status from user where uid=%d"%(uid))
+            user_info = cur.fetchone()
+            return render_template('/user_center_info.html',user_info=user_info,user_flag=user_flag,uid=uid)
     except Exception as e:
         print(e)
     finally:
         cur.close()
         conn.close()
-    return render_template('/user_center_info.html',user_info=user_info,user_flag=user_flag,uid=uid)
+    return render_template('/user_center_info.html',msg="抱歉，该主人设置了不可开放")
 
 # 处理请求查看评论的信息
 @app.route('/req_user_comm', methods=['GET'])
@@ -413,10 +425,58 @@ def req_mgr_reports():
     msg = "我的待处理举报"
     return render_template('/user_mgr_reports.html', msg=msg)
 
+# 跳转隐私设置页面
+@app.route("/goto_user_setting" ,methods=['GET'])
+def goto_user_setting():
+        return render_template('user_center_setting.html')
+
+
 # 隐私设置
 @app.route("/req_user_privacy" ,methods=['GET'])
-def user_privacy_set():
-    return render_template('/user_center_privacy.html')
+def req_user_privacy():
+
+    #获取路径带的参数，分发设置
+    req_path = request.args.get('path')
+    #获取当前登录用户的ID
+    log_id = session.get('user')[0]
+    try:
+        #获取数据库连接
+        conn =get_conn()
+        cur = conn.cursor()
+        # 查询该登录用户是否设置过隐私设置
+        cur.execute("select u_info from tb_pri_setting where uid=%d"%log_id)
+        exist_flag = cur.fetchone()
+
+        #分发设置
+        #请求设置个人信息
+        if req_path == "u_info":
+            new_value = request.args.get("new_info")
+            if new_value == "show":
+                # 设置查询不为空，说明已经设置过了
+                if exist_flag:
+                    cur.execute("update tb_pri_setting set u_info=0 where uid=%d"%log_id)
+                else:
+                    # 首次设置，做插入操作
+                    cur.execute("insert into tb_pri_setting(uid,u_info) values(%d,0)"%(log_id))
+            elif new_value == "hide":
+                if exist_flag:
+                    cur.execute("update tb_pri_setting set u_info=1 where uid=%d"%log_id)
+                else:
+                    # 首次设置，做插入操作
+                    cur.execute("insert into tb_pri_setting(uid,u_info) values(%d,1)"%(log_id))
+            else:
+                return "设置出错"    
+            conn.commit()
+            return "设置成功"
+        
+    except Exception as e:
+        conn.rollback()
+        print(e)
+    finally:
+        cur.close()
+        conn.close()
+
+
 
 
 if __name__ == "__main__":

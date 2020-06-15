@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>隐私设置</title>
+    <script src="../static/js/jquery-3.4.1.min.js"></script>
+        <style>
+        .setting_msg{
+            color: green;
+            font-size: 0.9rem;
+            font-family: kaiti,Arial, Helvetica, sans-serif;
+        }
+        th{
+            font-size: 1.2rem;
+            font-family: kaiti,Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+            color: rgb(48, 71, 25);
+        }
+        table tr td:first-child{
+            width: 120px;
+            height: 50px;
+            letter-spacing: 2px;
+            color: gray;
+        }
+        table tr td:nth-child(2),table tr td:nth-child(3){
+            width: 50px;
+        }
+        table tr td:last-child{
+            width: 80px;
+        }
+    </style>
+        <script>
+
+            //用来更新用户的设置
+            $(document).ready(function(){
+
+                var old_info = $("input[name='user_info']:checked").val();
+                $("input[name='user_info']").click(function(){
+                    var new_info=$("input[name='user_info']:checked").val();
+                    if(old_info == new_info){
+                    $('#info_msg').html("已是该选项");
+                  }else{
+                    console.log(new_info);
+                    //异步请求更改设置
+                    $.ajax({
+                        url:'/req_user_privacy?path=u_info',
+                        data:{'new_info':new_info},
+                        type:"get",
+                        success:function(msg){
+                            $("#info_msg").text(msg);
+                            old_info = new_info;
+                        }
+                    });  
+                  }
+                });
+         
+            });
+        </script>
+
+</head>
+<body>
+    <table style="text-align: center;" align="center">
+        <tr>
+            <th>选项</th>
+            <th>显示</th>
+            <th>隐藏</th>
+        </tr>
+        <tr>
+            <td>个人信息</td>
+            <td><input type="radio" name="user_info" value="show" checked="checked"></td>
+            <td><input type="radio" name="user_info" value="hide"></td>
+            <td><span id="info_msg" class="setting_msg"></span></td>
+        </tr>
+        <tr>
+            <td>我的评论</td>
+            <td><input type="radio" name="user_comm" value="show" checked="checked"></td>
+            <td><input type="radio" name="user_comm" value="hide"></td>
+            <td><span id="comm_msg" class="setting_msg"></span></td>
+        </tr>
+        <tr>
+            <td>我的点赞</td>
+            <td><input type="radio" name="user_good" value="show" checked="checked"></td>
+            <td><input type="radio" name="user_good" value="hide"></td>
+            <td><span id="good_msg" class="setting_msg"></span></td>
+        </tr>
+        <tr>
+            <td>我的收藏</td>
+            <td><input type="radio" name="user_coll" value="show" checked="checked"></td>
+            <td><input type="radio" name="user_coll" value="hide"></td>
+            <td><span id="coll_msg" class="setting_msg"></span></td>
+        </tr>
+        <tr>
+            <td>我的关注</td>
+            <td><input type="radio" name="user_subs" value="show" checked="checked"></td>
+            <td><input type="radio" name="user_subs" value="hide"></td>
+            <td><span id="subs_msg" class="setting_msg"></span></td>
+        </tr>
+        <tr>
+            <td>我的粉丝</td>
+            <td><input type="radio" name="user_fans" value="show" checked="checked"></td>
+            <td><input type="radio" name="user_fans" value="hide"></td>
+            <td><span id="fans_msg" class="setting_msg"></span></td>
+        </tr>
+        <tr>
+            <td>浏览记录</td>
+            <td><input type="radio" name="user_logs" value="show" checked="checked"></td>
+            <td><input type="radio" name="user_logs" value="hide"></td>
+            <td><span id="logs_msg" class="setting_msg"></span></td>
+        </tr>
+    </table>       
+    </div>
+</body>
+</html>
