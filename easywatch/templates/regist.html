@@ -56,7 +56,7 @@
             }
 
             // jQuery ajax添加用户名重复性校验
-            $('#regist_name').keydown(function(){
+            $('#regist_name').keyup(function(){
                 var reg_name = $('#regist_name').val();
 
                 //先做格式校验,格式校验通过在ajax重复性校验
@@ -141,7 +141,7 @@
     </div>
 
     <!-- 消息闪现用于后台验证，防止跳过js验证出现的安全问题 -->
-    <div id="flask_msg">
+    <!-- <div id="flask_msg">
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages%}
@@ -149,7 +149,7 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-    </div>
+    </div> -->
 
     
 </body>

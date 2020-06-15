@@ -107,7 +107,6 @@ def uname_repeat_verify():
 
         cur.execute("select uid from user where uname='%s'"%(reg_name))
         flag = cur.fetchone()
-        print(flag)
 
         if flag:
             msg = "用户名重复"
@@ -121,42 +120,44 @@ def uname_repeat_verify():
         conn.close()    
 
 # 实现注册
-@app.route('/regist', methods=['POST','GET'])
+@app.route('/regist', methods=['POST'])
 def regist():
 
-    if request.method == 'POST':
-        reg_name = request.form.get('regist_name')
-        reg_pass = request.form.get('regist_pass')
+    reg_name = request.form.get('regist_name')
+    reg_pass = request.form.get('regist_pass')
 
-        # 对输入的数据做校验
-        if len(reg_name) <3 or len(reg_pass)<3:
-            flash('输入正确的格式')
-            return redirect(url_for('goto_regist'))
+    # # 对输入的数据做校验
+    # if len(reg_name) <3 or len(reg_pass)<3:
+    #     flash('输入正确的格式')
+    #     return redirect(url_for('goto_regist'))
         
-        try:
-            conn=get_conn()
-            cur=conn.cursor()
+    try:
+        conn=get_conn()
+        cur=conn.cursor()
             
-            cur.execute("insert into user(uname, upass) values('%s','%s')" %(reg_name, reg_pass))
-            conn.commit()
+        cur.execute("insert into user(uname, upass) values('%s','%s')" %(reg_name, reg_pass))
+        conn.commit()
 
-            # 注册成功后需要自动登录，查询用户ID，用户权限,故需要做用户名唯一性校验
-            cur.execute("select uid ,user_right from user where uname='%s'"%(reg_name,))
-            uid = cur.fetchone()[0]
-            u_right = cur.fetchone()[1]
+        # 注册成功后需要自动登录，查询用户ID，用户权限,故需要做用户名唯一性校验
+        cur.execute("select uid ,uname,user_right from user where uname='%s'"%(reg_name,))
+        user_info = cur.fetchone()
+        print(user_info)
+        
 
-            # 将用户信息存入session中
-            session['user'] = (uid, reg_name,u_right)
-            return render_template('index.html', user=session['user'])
+        # 将用户信息存入session中
+        if session.get('user'):
+            del session['user']
+        session['user'] = user_info
 
-        except Exception as e:
-            conn.rollback()
-            print(e)
-        finally:
-            cur.close()
-            conn.close()
+    except Exception as e:
+        conn.rollback()
+        print(e)
+    finally:
+        cur.close()
+        conn.close()
+        
+    return redirect(url_for('index'))
 
-    return redirect(url_for('goto_regist'))
 
 # 携带uid跳转个人中心，方便做好访问控制，该方法为中间跳转方法，为了可以从多处携带不通的uid访问
 @app.route('/goto_userCenter', methods=['get'])
@@ -343,9 +344,14 @@ def req_user_info():
         cur = conn.cursor()
         # 访问他人的个人中心，需要先查询他人的隐私设置
         cur.execute("select u_info from tb_pri_setting where uid=%d"%uid)
-        u_info_flag = cur.fetchone()[0]
-        # 如果隐私设置的可见（0）,才进行后面的操作
-        if u_info_flag == 0:
+        res = cur.fetchone()
+        # 如果未设置,res 为none,此时也可查询
+        if res is None:
+            u_info_flag = 0
+        else:
+            u_info_flag = res[0]
+        # 如果隐私设置的可见（0）或者当前登录用户为管理员或自己,才进行后面的操作,
+        if u_info_flag == 0 or  session.get('user')[2]==1 or user_flag ==1:
             cur.execute("select uname,regist_time,user_right,user_status from user where uid=%d"%(uid))
             user_info = cur.fetchone()
             return render_template('/user_center_info.html',user_info=user_info,user_flag=user_flag,uid=uid)
@@ -354,28 +360,38 @@ def req_user_info():
     finally:
         cur.close()
         conn.close()
-    return render_template('/user_center_info.html',msg="抱歉，该主人设置了不可开放")
+    return render_template('/user_center_info.html',msg="抱歉，该主人设置了不开放")
 
 # 处理请求查看评论的信息
 @app.route('/req_user_comm', methods=['GET'])
 def req_user_comm():
     uid = int(request.args.get('uid'))
-    sess_uright = int(session.get('user')[2])
+    log_id = session.get("user")[0]
+    log_uright = session.get('user')[2]
     # 当前登录的用户为管理员,所有内容可见
-    aviable_flag = None
-    if sess_uright==1:
-        aviable_flag = 0
+
     try:
         conn = get_conn()
         cur = conn.cursor()
-        cur.execute("select vid,comm,commtime,commstatus from tb_comment where uid=%d"%uid)
-        user_comms = cur.fetchall()
+        # 查询当前被访问用户的评论权限
+        cur.execute("select u_comm from tb_pri_setting where uid=%d"%uid)
+        res = cur.fetchone()
+        # res为none，表明未设置过隐私，此时应为默认可见
+        if res is None:
+            comm_flag = 0
+        else:
+            comm_flag = res[0]
+        # 权限公开（0）,未设置none，或者登录用户为管理员或者自己，才可查看
+        if comm_flag == 0 or log_id == uid or log_uright==1:
+            cur.execute("select vid,comm,commtime,commstatus from tb_comment where uid=%d"%uid)
+            user_comms = cur.fetchall()
+            return render_template('/user_center_comm.html',user_comms=user_comms,log_right=log_uright)
     except Exception as e:
         print(e)
     finally:
         cur.close()
         conn.close()
-    return render_template('/user_center_comm.html',user_comms=user_comms,aviable_flag=aviable_flag)
+    return render_template('/user_center_comm.html',msg="抱歉，该主人设置了不开放")
 
 # 处理请求查看点赞的请求
 @app.route('/req_user_good', methods=['GET'])
@@ -469,6 +485,27 @@ def req_user_privacy():
             conn.commit()
             return "设置成功"
         
+        # 请求设置评论设置
+        if req_path == "u_comm":
+            new_value = request.args.get("new_comm")
+            if new_value == "show":
+                # 设置查询不为空，说明已经设置过了
+                if exist_flag:
+                    cur.execute("update tb_pri_setting set u_comm=0 where uid=%d"%log_id)
+                else:
+                    # 首次设置，做插入操作
+                    cur.execute("insert into tb_pri_setting(uid,u_comm) values(%d,0)"%(log_id))
+            elif new_value == "hide":
+                if exist_flag:
+                    cur.execute("update tb_pri_setting set u_comm=1 where uid=%d"%log_id)
+                else:
+                    # 首次设置，做插入操作
+                    cur.execute("insert into tb_pri_setting(uid,u_comm) values(%d,1)"%(log_id))
+            else:
+                return "设置出错"    
+            conn.commit()
+            return "设置成功"
+
     except Exception as e:
         conn.rollback()
         print(e)

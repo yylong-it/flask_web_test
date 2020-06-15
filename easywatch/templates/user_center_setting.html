@@ -34,6 +34,7 @@
             //用来更新用户的设置
             $(document).ready(function(){
 
+                //个人信息的设置
                 var old_info = $("input[name='user_info']:checked").val();
                 $("input[name='user_info']").click(function(){
                     var new_info=$("input[name='user_info']:checked").val();
@@ -53,6 +54,28 @@
                     });  
                   }
                 });
+
+                //我的评论的设置
+                var old_comm = $("input[name='user_comm']:checked").val();
+                $("input[name='user_comm']").click(function(){
+                    var new_comm=$("input[name='user_comm']:checked").val();
+                    if(old_comm == new_comm){
+                    $('#comm_msg').html("已是该选项");
+                  }else{
+                    console.log(new_comm);
+                    //异步请求更改设置
+                    $.ajax({
+                        url:'/req_user_privacy?path=u_comm',
+                        data:{'new_comm':new_comm},
+                        type:"get",
+                        success:function(msg){
+                            $("#comm_msg").text(msg);
+                            old_comm = new_comm;
+                        }
+                    });  
+                  }
+                }); 
+                
          
             });
         </script>
