@@ -269,7 +269,7 @@ def upload():
 
         video = request.files["video"]
         video_name = video.filename
-        # 视频上传的服务器存储路劲
+        # 视频上传的服务器存储路径
         video_path = base_dir + "/static/video/content/" + video_name
         # 存入数据库的URL
         video_url = os.path.join("../static/video/content/", video_name)
@@ -298,6 +298,104 @@ def upload():
 
     return render_template("upload.html", resp_code=resp_code)
 
+# 查看视频时ajax请求点赞，收藏的信息
+@app.route('/ajax_vinfo',methods=['post'])
+def ajax_vinfo():
+    # 设置返回信息
+    err_code = {"good":"no","coll":"no"}
+    #判断是否登录
+    log_id = session.get('user')[0]
+    vid = int(request.form.get('vid'))
+    if log_id:
+        try:
+            conn =get_conn()
+            cur = conn.cursor()
+
+            # 查询点赞表
+            cur.execute("select good_status from tb_good where vid=%d and uid=%d"%(vid,log_id))
+            res_good = cur.fetchone()
+            # 如果res为none，点赞记录不存在
+            if res_good is None:
+                err_code['good'] = 'not_exist'
+            # 如果res不为none且good_status为0，说明为点赞状态
+            if res_good is not None:
+                if res_good[0] == 0:
+                    err_code["good"] = "yes"
+
+            # 查询收藏表
+            cur.execute("select coll_status from tb_coll where vid=%d and uid=%d"%(vid,log_id))
+            res_coll = cur.fetchone()
+            if res_coll is None:
+                err_code['coll'] = 'not_exist'
+            if res_coll is not None:
+                if res_coll[0] == 0:
+                    err_code['coll'] = 'yes'
+
+        except Exception as e:
+            print(e)
+        finally:
+            cur.close()
+            conn.close()
+    print(err_code)
+    return err_code
+
+
+# 处理点赞/取消点赞,收藏/取消收藏的请求
+@app.route('/req_good_coll',methods=['POST'])
+def req_good_coll():
+    vid = int(request.form.get('vid'))
+    uid = session.get('user')[0]
+    req_path = request.form.get('req_stat')
+    print(req_path)
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        # 点赞
+        if 'add_good' == req_path:
+            log_exist = request.form.get('log_exist')
+            if log_exist == 'no':
+                cur.execute("update tb_good set good_status=0,good_time=CURRENT_TIMESTAMP where vid=%d and uid=%d"%(vid, uid))
+            if log_exist == 'not_exist':
+                cur.execute("insert into tb_good(vid,uid) values(%d,%d)"%(vid, uid))
+            # 点赞表操作成功之后需要视频表点赞数+1    
+            cur.execute("update video set vup=vup+1 where vid=%d"%vid)
+            conn.commit()
+            return '点赞成功'
+
+        # 取消点赞
+        if 'del_good' == req_path:
+            cur.execute("update tb_good set good_status=1,good_time=CURRENT_TIMESTAMP where vid=%d and uid=%d"%(vid, uid))
+            cur.execute("update video set vup=vup-1 where vid=%d"%vid)
+            conn.commit()
+            return '取消成功'
+
+        # 收藏
+        if 'add_coll' == req_path:
+            log_exist = request.form.get('log_exist')
+            if log_exist == 'no':
+                cur.execute("update tb_coll set coll_status=0,coll_time=CURRENT_TIMESTAMP where vid=%d and uid=%d"%(vid, uid))
+            if log_exist == 'not_exist':
+                cur.execute("insert into tb_coll(vid,uid) values(%d,%d)"%(vid, uid))
+            # 收藏表操作成功之后需要视频收藏数+1    
+            cur.execute("update video set vcollect=vcollect+1 where vid=%d"%vid)
+            conn.commit()
+            return '收藏成功'
+
+        # 取消收藏
+        if 'del_coll' == req_path:
+            cur.execute("update tb_coll set coll_status=1,coll_time=CURRENT_TIMESTAMP where vid=%d and uid=%d"%(vid, uid))
+            cur.execute("update video set vcollect=vcollect-1 where vid=%d"%vid)
+            conn.commit()
+            return '取消成功'
+
+    except Exception as e:
+        conn.rollback()
+        print(e)
+    finally:
+        cur.close()
+        conn.close()
+
+    return "操作失败"
 
 # 添加评论信息
 @app.route('/add_comment', methods=['POST'])

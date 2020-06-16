@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>EasyWatch</title>
+    <script src="../static/js/jquery-3.4.1.min.js"></script>
     <style>
         #video_div{
             width: 60%;
@@ -75,18 +76,160 @@
            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
        }
     </style>
-    <script src="../static/js/jquery-3.4.1.min.js"></script>
+    <script>
+
+        $(document).ready(function(){
+
+            //请求点赞状态,收藏状态
+            var vid = $("#v_vid").text()
+            var good_num = Number($('#good_num').text())
+            var coll_num = Number($('#coll_num').text())
+            var err_good='',err_coll='' ;
+
+            $.ajax({
+                url:"/ajax_vinfo",
+                data:{"vid":vid},
+                type:"post",
+                async : false,
+                success:function(err_code){    
+                    err_good = err_code['good']
+                    err_coll = err_code['coll']
+                    //查询出已点赞
+                    if(err_code['good'] == 'yes'){
+                        $("#good_img").attr("src","../static/images/gooded.png");
+                        $("#good_img").attr("title","取消点赞");
+                        
+                    }else{
+                        $("#good_img").attr("src","../static/images/good.png");
+                        $("#good_img").attr("title","喜欢就点赞吧");
+                    }
+
+                    //查询出已收藏
+                    if(err_code['coll'] == 'yes'){
+                        $("#coll_img").attr("src","../static/images/colled.png");
+                        $("#coll_img").attr("title","取消收藏");    
+                    }else{
+                        $("#coll_img").attr("src","../static/images/coll.png");
+                        $("#coll_img").attr("title","喜欢就收藏吧");
+                    }
+                }
+            });
+
+            $("#good_img").click(function(){
+
+                //已点赞取消点赞
+                if(err_good == 'yes'){
+                    var good_flag = confirm("确定取消点赞吗");
+                    if(good_flag == true){
+                        $.ajax({
+                            url:"/req_good_coll",
+                            data:{'vid':vid,'req_stat':'del_good'},
+                            type:'POST',
+                            success:function(msg){
+                                alert(msg);
+                                $("#good_img").attr("src","../static/images/good.png");
+                                $("#good_img").attr("title","喜欢就点赞吧");
+                            }
+                        })
+                    }else{
+                        return;
+                    }
+                }
+
+                //查询出来未点赞(取消了点赞（存在记录），从未点赞（不存在记录）)，异步请求点赞
+                if(err_good == 'no' || err_good == 'not_exist'){
+                    $.ajax({
+                        url:"{{ url_for('req_good_coll') }}",
+                        data:{"vid":vid,"req_stat":"add_good","log_exist":err_good},
+                        type:"POST",
+                        success:function(msg){
+                            alert(msg);
+                            $("#good_img").attr("src","../static/images/gooded.png");
+                            $("#good_img").attr("title","取消点赞");
+                        }
+                    });
+                }
+
+                //反复点赞，取消,需要更改err_good的值
+                if(err_good == 'yes'){
+                    err_good = 'no';
+                    good_num = good_num -1;
+                    $('#good_num').text(good_num);
+                }else{
+                    err_good = 'yes';
+                    good_num = good_num + 1;
+                    $('#good_num').text(good_num);
+                }
+            });
+
+
+
+            $("#coll_img").click(function(){
+
+                //已收藏取消收藏
+                if(err_coll == 'yes'){
+                    var coll_flag = confirm("是否取消收藏");
+                    if(coll_flag == true){
+                        $.ajax({
+                            url:"/req_good_coll",
+                            data:{'vid':vid,'req_stat':'del_coll'},
+                            type:'POST',
+                            async : false,
+                            success:function(msg){
+                            alert(msg);
+                            $('#coll_num').text(coll_num - 1);
+                            $("#coll_img").attr("src","../static/images/coll.png");
+                            $("#coll_img").attr("title","喜欢就收藏吧");
+                            }
+                        });
+                    }else{
+                        return ;
+                    }
+
+                }
+
+                if(err_coll == 'no' || err_coll == 'not_exist'){
+                    $.ajax({
+                        url:"/req_good_coll",
+                        data:{'vid':vid,'req_stat':'add_coll','log_exist':err_coll},
+                        type:"POST",
+                        async : false,
+                        success:function(msg){
+                            alert(msg);
+                            $('#coll_num').text(coll_num + 1);
+                            $("#coll_img").attr("src","../static/images/colled.png");
+                            $("#coll_img").attr("title","取消收藏");
+                        }
+                    });
+                }
+
+                //在同一页面多次操作，需要更改err_coll的值(点击一次触发一次)
+                if(err_coll == 'yes'){
+                    err_coll = 'no';
+                    coll_num = coll_num -1;
+                    $('#coll_num').text(coll_num);
+                }else{
+                    err_coll = 'yes';
+                    coll_num = coll_num + 1;
+                    $('#coll_num').text(coll_num);
+                }
+
+            });
+        
+        })
+    </script>
 </head>
-<body>
+<body style="min-width: 500px; min-height: 600px;">
 
     <div id="video_div">
-        <span>{{ video[3] }}</span>
+        <span id='v_title'>{{ video[3] }}</span>
+        <span id="v_vid">{{ video[0] }}</span>
         <video src="{{ video[6] }}" controls = "true" style="width:100%; height:100%; object-fit: fill"></video>
         <div id="up_div">
-            <a href=""><img src="../static/images/good.png" alt="点赞" title="喜欢就点赞吧"></a>
-            <span style="display: inline;">{{ video[8] }}</span>
-            <a href=""><img src="../static/images/coll.png" alt="收藏" title="喜欢就收藏吧"></a>
-            <span style="display: inline;">{{ video[9] }}</span>
+            <div id="good_add" style="display: inline;"><img src="../static/images/good.png" alt="点赞" title="喜欢就点赞吧" id="good_img"></div>
+            <span id="good_num" style="display: inline; margin-left: 5px;color: rgb(92, 86, 79);">{{ video[8] }}</span>
+            <div style="margin-left: 50px;display: inline;"><img src="../static/images/coll.png" alt="收藏" title="喜欢就收藏吧" id="coll_img"></div>
+            <span id="coll_num" style="display: inline; margin-left: 5px;color: rgb(92, 86, 79);">{{ video[10] }}</span>
         </div>
     </div>
     <div id="comment_div">
