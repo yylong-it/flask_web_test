@@ -55,7 +55,7 @@
                   }
                 });
 
-                //我的评论的设置
+                //我的评论隐私设置
                 var old_comm = $("input[name='user_comm']:checked").val();
                 $("input[name='user_comm']").click(function(){
                     var new_comm=$("input[name='user_comm']:checked").val();
@@ -75,6 +75,49 @@
                     });  
                   }
                 }); 
+
+                //我的点赞隐私设置
+                var old_good = $("input[name='user_good']:checked").val();
+                $("input[name='user_good']").click(function(){
+                    var new_good=$("input[name='user_good']:checked").val();
+                    if(old_good == new_good){
+                    $('#good_msg').html("已是该选项");
+                  }else{
+                    console.log(new_good);
+                    //异步请求更改设置
+                    $.ajax({
+                        url:'/req_user_privacy?path=u_good',
+                        data:{'new_good':new_good},
+                        type:"get",
+                        success:function(msg){
+                            $("#good_msg").text(msg);
+                            old_good = new_good;
+                        }
+                    });  
+                  }
+                });
+
+
+                //我的收藏隐私设置
+                var old_coll = $("input[name='user_coll']:checked").val();
+                $("input[name='user_coll']").click(function(){
+                    var new_coll=$("input[name='user_coll']:checked").val();
+                    if(old_coll == new_coll){
+                    $('#coll_msg').html("已是该选项");
+                  }else{
+                    console.log(new_coll);
+                    //异步请求更改设置
+                    $.ajax({
+                        url:'/req_user_privacy?path=u_coll',
+                        data:{'new_coll':new_coll},
+                        type:"get",
+                        success:function(msg){
+                            $("#coll_msg").text(msg);
+                            old_coll = new_coll;
+                        }
+                    });  
+                  }
+                });
                 
          
             });

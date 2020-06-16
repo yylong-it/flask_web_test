@@ -6,6 +6,24 @@
     <title>点赞信息</title>
 </head>
 <body>
-    {{ msg }}
+    {% if not msg %}
+        {% if user_goods %}
+            {% for user_good in user_goods%}
+                {% if user_good[2]==0 or log_right==1 %}
+                    <div><a href="/video?vid={{ user_good[0] }}" target="blank">查看视频</a></div>
+                    {% if user_good[2]==0 %}
+                        <div>点赞状态：点赞</div>
+                    {% else %}
+                        <div>点赞状态：取消了点赞</div>
+                    {% endif %}
+                    <div>点赞时间：{{ user_good[1] }}</div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <div>主人比较懒，什么都没有留下</div>
+        {% endif %}
+    {% else %}
+        <div>{{ msg }}</div>
+    {% endif %}
 </body>
 </html>

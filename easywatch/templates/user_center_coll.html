@@ -6,6 +6,24 @@
     <title>Document</title>
 </head>
 <body>
-    {{ msg }}
+    {% if not msg %}
+        {% if user_colls %}
+            {% for user_coll in user_colls%}
+                {% if user_coll[2]==0 or log_right==1 %}
+                    <div><a href="/video?vid={{ user_coll[0] }}" target="blank">视频号:{{ user_coll[0] }}</a></div>
+                    {% if user_coll[2]==0 %}
+                        <div>收藏状态：收藏</div>
+                    {% else %}
+                        <div>收藏状态：取消了收藏</div>
+                    {% endif %}
+                    <div>收藏时间：{{ user_coll[1] }}</div>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <div>主人比较懒，什么都没有留下</div>
+        {% endif %}
+    {% else %}
+        <div>{{ msg }}</div>
+    {% endif %}
 </body>
 </html>

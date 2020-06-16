@@ -433,10 +433,13 @@ def req_user_info():
     uid = int(request.args.get("uid"))
     # 获取session中的uid
     sess_uid = session.get('user')[0]
-    # 判断登录用户和被访问的用户是否为同一个用户
-    user_flag = 0
+    # 获取登录用户的权限
+    log_right = session.get('user')[2]
     if sess_uid == uid:
+        user_flag =0
+    else:
         user_flag = 1
+    
     try:
         conn = get_conn()
         cur = conn.cursor()
@@ -449,10 +452,10 @@ def req_user_info():
         else:
             u_info_flag = res[0]
         # 如果隐私设置的可见（0）或者当前登录用户为管理员或自己,才进行后面的操作,
-        if u_info_flag == 0 or  session.get('user')[2]==1 or user_flag ==1:
-            cur.execute("select uname,regist_time,user_right,user_status from user where uid=%d"%(uid))
+        if u_info_flag == 0 or  user_flag == 0 or log_right == 1:
+            cur.execute("select uid,uname,regist_time,user_right,user_status from user where uid=%d"%(uid))
             user_info = cur.fetchone()
-            return render_template('/user_center_info.html',user_info=user_info,user_flag=user_flag,uid=uid)
+            return render_template('/user_center_info.html',user_info=user_info,log_right=log_right,user_flag=user_flag)
     except Exception as e:
         print(e)
     finally:
@@ -494,14 +497,64 @@ def req_user_comm():
 # 处理请求查看点赞的请求
 @app.route('/req_user_good', methods=['GET'])
 def req_user_good():
-    msg = "我的精彩的点赞"
-    return render_template('/user_center_good.html', msg=msg)
+    uid = int(request.args.get('uid'))
+    log_id = session.get("user")[0]
+    log_uright = session.get('user')[2]
+    # 当前登录的用户为管理员,所有内容可见
+
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        # 查询当前被访问用户的评论权限
+        cur.execute("select u_good from tb_pri_setting where uid=%d"%uid)
+        res = cur.fetchone()
+        # res为none，表明未设置过隐私，此时应为默认可见
+        if res is None:
+            good_flag = 0
+        else:
+            good_flag = res[0]
+        # 权限公开（0）,未设置none，或者登录用户为管理员或者自己，才可查看
+        if good_flag == 0 or log_id == uid or log_uright==1:
+            cur.execute("select vid, good_time, good_status from tb_good where uid=%d"%uid)
+            user_goods = cur.fetchall()
+            return render_template('/user_center_good.html',user_goods=user_goods,log_right=log_uright)
+    except Exception as e:
+        print(e)
+    finally:
+        cur.close()
+        conn.close()
+    return render_template('/user_center_good.html',msg="抱歉，该主人设置了不开放")
 
 # 处理请求收藏的请求
 @app.route('/req_user_coll', methods=['GET'])
 def req_user_coll():
-    msg = "我的收藏夹"
-    return render_template('/user_center_coll.html', msg=msg)
+    uid = int(request.args.get('uid'))
+    log_id = session.get("user")[0]
+    log_uright = session.get('user')[2]
+    # 当前登录的用户为管理员,所有内容可见
+
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        # 查询当前被访问用户的评论权限
+        cur.execute("select u_coll from tb_pri_setting where uid=%d"%uid)
+        res = cur.fetchone()
+        # res为none，表明未设置过隐私，此时应为默认可见
+        if res is None:
+            coll_flag = 0
+        else:
+            coll_flag = res[0]
+        # 权限公开（0）,未设置none，或者登录用户为管理员或者自己，才可查看
+        if coll_flag == 0 or log_id == uid or log_uright==1:
+            cur.execute("select vid, coll_time, coll_status from tb_coll where uid=%d"%uid)
+            user_colls = cur.fetchall()
+            return render_template('/user_center_coll.html',user_colls=user_colls,log_right=log_uright)
+    except Exception as e:
+        print(e)
+    finally:
+        cur.close()
+        conn.close()
+    return render_template('/user_center_good.html',msg="抱歉，该主人设置了不开放")
 
 # 处理查看投稿信息的请求
 @app.route('/req_user_upload', methods=['GET'])
@@ -599,6 +652,48 @@ def req_user_privacy():
                 else:
                     # 首次设置，做插入操作
                     cur.execute("insert into tb_pri_setting(uid,u_comm) values(%d,1)"%(log_id))
+            else:
+                return "设置出错"    
+            conn.commit()
+            return "设置成功"
+
+        # 请求设置点赞设置
+        if req_path == "u_good":
+            new_value = request.args.get("new_good")
+            if new_value == "show":
+                # 设置查询不为空，说明已经设置过了
+                if exist_flag:
+                    cur.execute("update tb_pri_setting set u_good=0 where uid=%d"%log_id)
+                else:
+                    # 首次设置，做插入操作
+                    cur.execute("insert into tb_pri_setting(uid,u_good) values(%d,0)"%(log_id))
+            elif new_value == "hide":
+                if exist_flag:
+                    cur.execute("update tb_pri_setting set u_good=1 where uid=%d"%log_id)
+                else:
+                    # 首次设置，做插入操作
+                    cur.execute("insert into tb_pri_setting(uid,u_good) values(%d,1)"%(log_id))
+            else:
+                return "设置出错"    
+            conn.commit()
+            return "设置成功"
+
+        # 请求设置收藏设置
+        if req_path == "u_coll":
+            new_value = request.args.get("new_coll")
+            if new_value == "show":
+                # 设置查询不为空，说明已经设置过了
+                if exist_flag:
+                    cur.execute("update tb_pri_setting set u_coll=0 where uid=%d"%log_id)
+                else:
+                    # 首次设置，做插入操作
+                    cur.execute("insert into tb_pri_setting(uid,u_coll) values(%d,0)"%(log_id))
+            elif new_value == "hide":
+                if exist_flag:
+                    cur.execute("update tb_pri_setting set u_coll=1 where uid=%d"%log_id)
+                else:
+                    # 首次设置，做插入操作
+                    cur.execute("insert into tb_pri_setting(uid,u_coll) values(%d,1)"%(log_id))
             else:
                 return "设置出错"    
             conn.commit()

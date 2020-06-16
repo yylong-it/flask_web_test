@@ -13,20 +13,23 @@
 <body>
     {% if not msg %}
         <div id="main_div">
-            {% if user_info[3]==0 %}
-                <div>用户ID：{{ uid }}</div>
-                <div>用户名：{{ user_info[0] }}</div>
-                <div>注册时间：{{ user_info[1] }}</div>
-                {% if user_info[2]==0 %}
+            {% if user_info[4]==0 or log_right == 1 %}
+                <div>用户ID：{{ user_info[0] }}</div>
+                <div>用户名：{{ user_info[1] }}</div>
+                <div>注册时间：{{ user_info[2] }}</div>
+                {% if user_info[3]==0 %}
                     <div>用户权限：普通用户</div>
                 {% else %}
                     <div>用户权限：管理员</div>
                 {% endif %}
-                {% if user_flag==1 %}
+                {% if user_flag==0 %}
                     <div><a href="">修改密码</a></div>
                 {% endif %}
+                {% if user_info[4] ==1 %}
+                    <div>账号封禁中</div>
+                {% endif %}
             {% else %}
-                <div>账号异常</div>
+                <div>账号封禁中</div>
             {% endif %}
         </div>
     {% else %}
