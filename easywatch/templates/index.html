@@ -10,7 +10,8 @@
     <link rel="shortcut icon" href="../static/images/favicon.ico">
     <script>
 
-        window.onload = function(){
+        $(document).ready(function(){
+
             //自动加载首页
             $.ajax({
                 url:"{{ url_for('first_page') }}",
@@ -19,7 +20,67 @@
                     $('#index_frame').contents().find('body').html(data)
                 }
             });
-        }
+
+            $('#index_a').focus(function(){
+
+                $("#index_img").attr("src","../static/images/index/first_paged.png");
+            });
+
+            $("#game_a").focus(function(){
+
+                $("#game_img").attr("src","../static/images/index/gamed.png");
+            });
+
+            $("#food_a").focus(function(){
+                
+                $("#food_img").attr("src","../static/images/index/fooded.png");
+            });
+
+            $("#tech_a").focus(function(){
+
+                $("#tech_img").attr("src","../static/images/index/technologyed.png");
+            });
+
+            $("#life_a").focus(function(){
+
+                $("#life_img").attr("src","../static/images/index/lifed.png");
+            });
+
+            $("#rec_a").focus(function(){
+
+                $("#rec_img").attr("src","../static/images/index/recreationed.png");
+            });
+
+            $(".a_sort").blur(function(){
+
+                $("#index_img").attr("src","../static/images/index/first_page.png");    
+            });
+
+            $("#game_a").blur(function(){
+
+                $("#game_img").attr("src","../static/images/index/game.png");
+            });
+
+            $("#food_a").blur(function(){
+
+                $("#food_img").attr("src","../static/images/index/food.png");
+            });
+
+            $("#tech_a").blur(function(){
+
+                $("#tech_img").attr("src","../static/images/index/technology.png");
+            });
+
+            $("#life_a").blur(function(){
+
+                $("#life_img").attr("src","../static/images/index/life.png");
+            });
+
+            $("#rec_a").blur(function(){
+
+                $("#rec_img").attr("src","../static/images/index/recreation.png");
+            });
+        });
     </script>
 </head>
 <body>
@@ -46,22 +107,28 @@
     <div id="div_table">
         <table style="border-collapse:collapse">
             <th>
-                <a href="/first_page" target="index_frame" class="a_sort"><img src="../static/images/first_page.png" alt="首页" title="首页"></a>
+                <a href="/first_page" target="index_frame" class="a_sort" id="index_a">
+                    <img src="../static/images/index/first_page.png" alt="首页" title="首页" id="index_img"></a>
             </th>
             <th>
-                <a href="/sortByType?type='游戏'" target="index_frame" class="a_sort"><img src="../static/images/game.png" alt="游戏" title="游戏"></a>
+                <a href="/sortByType?type='游戏'" target="index_frame" class="a_sort" id="game_a">
+                    <img src="../static/images/index/game.png" alt="游戏" title="游戏" id="game_img"></a>
             </th>
             <th>
-                <a href="/sortByType?type='美食'" target="index_frame" class="a_sort"><img src="../static/images/food.png" alt="美食" title="美食"></a>
+                <a href="/sortByType?type='美食'" target="index_frame" class="a_sort" id="food_a">
+                    <img src="../static/images/index/food.png" alt="美食" title="美食" id="food_img"></a>
             </th>
             <th>
-                <a href="/sortByType?type='科技'" target="index_frame" class="a_sort"><img src="../static/images/technology.png" alt="科技" title="科技"></a>
+                <a href="/sortByType?type='科技'" target="index_frame" class="a_sort" id="tech_a">
+                    <img src="../static/images/index/technology.png" alt="科技" title="科技" id="tech_img"></a>
             </th>
             <th>
-                <a href="/sortByType?type='生活'" target="index_frame" class="a_sort"><img src="../static/images/life.png" alt="生活" title="生活"></a>
+                <a href="/sortByType?type='生活'" target="index_frame" class="a_sort" id="life_a">
+                    <img src="../static/images/index/life.png" alt="生活" title="生活" id="life_img"></a>
             </th>
             <th>
-                <a href="/sortByType?type='娱乐'" target="index_frame" class="a_sort"><img src="../static/images/recreation.png" alt="娱乐" title="娱乐"></a>
+                <a href="/sortByType?type='娱乐'" target="index_frame" class="a_sort" id="rec_a">
+                    <img src="../static/images/index/recreation.png" alt="娱乐" title="娱乐" id="rec_img"></a>
             </th>
         </table>
     </div>

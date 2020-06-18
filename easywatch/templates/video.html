@@ -75,6 +75,10 @@
            margin: 5px;
            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
        }
+       img{
+           width: 40px;
+           height: 40px;
+       }
     </style>
     <script>
 
@@ -237,19 +241,23 @@
         <a href="">按时间排序</a><br>
 
         <form action="/add_comment" method="POST">
-            <div style="display: inline-flex;align-items: center;letter-spacing: 3px;margin: 3px;">
+            <div  style="display: inline-flex;align-items: center;letter-spacing: 3px;margin: 3px;">
                 <input type="text" hidden value="{{ video[0] }}" name="vid">
-                <textarea id="comment" rows="20" cols="20" name="comment"></textarea>
+                <textarea id="comment" rows="20" cols="20" name="comment" minlength="2"></textarea>
                 <input type="submit" value="发表评论" id="submit">
             </div>
         </form>
 
-        {% for comment in comments %}
-        <p>{{ comment[1] }}</p>
-        <p>{{ comment[2] }}</p>
-        <p>{{ comment[3] }}</p>
-        <hr>
-        {% endfor %}
+        {% if comments %}
+            {% for comment in comments %}
+            <div>{{ comment[1] }}</div>
+            <div>{{ comment[2] }}</div>
+            <div>{{ comment[3] }}</div>
+            <hr>
+            {% endfor %}
+        {% else %}
+            <div>暂无评论信息</div>
+        {% endif %}
 
     </div>
 

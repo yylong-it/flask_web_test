@@ -206,7 +206,7 @@ def sort_by_type():
     try:
         conn = get_conn()
         cur = conn.cursor()
-        cur.execute("select vid,vtitle,vcoverurl from video where vtype=%s" %
+        cur.execute("select vid,vtitle,vcoverurl from video where vtype=%s and vstatus=0" %
                     vtype)
         covers = cur.fetchall()
         print(covers)
@@ -556,11 +556,25 @@ def req_user_coll():
         conn.close()
     return render_template('/user_center_good.html',msg="抱歉，该主人设置了不开放")
 
-# 处理查看投稿信息的请求
+# 处理查看投稿信息的请求(投稿信息不可设置隐私)
 @app.route('/req_user_upload', methods=['GET'])
 def req_user_upload():
-    msg = "我的投稿信息"
-    return render_template('/user_center_upload.html', msg=msg)
+    uid = int(request.args.get('uid'))
+    log_id = session.get('user')[0]
+    log_right = session.get('user')[2]
+    u_flag = 0 if uid == log_id else 1
+
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+        cur.execute("select vid,vupload,vstatus from video where uid =%d"%uid)
+        vidoes = cur.fetchall()
+    except Exception as e:
+        print(e)
+    finally:
+        cur.close()
+        conn.close()
+    return render_template('/user_center_upload.html', videos=vidoes,log_right=log_right,u_flag=u_flag)
 
 # 处理请求关注列表的请求
 @app.route('/req_user_sub', methods=['GET'])
@@ -583,8 +597,46 @@ def req_user_visits():
 # 管理员查看投稿审核
 @app.route('/req_mgr_vid', methods=['GET'])
 def req_manager_visits():
-    msg = "我的待审核稿件"
-    return render_template('/user_mgr_vid.html', msg=msg)
+    log_right = session.get('user')[2]
+    if log_right == 1:
+        try:
+            conn = get_conn()
+            cur =conn.cursor()
+
+            cur.execute("select vid,uid,uname,vupload from video where vstatus = 2")
+            res_vids = cur.fetchall()
+        except Exception as e:
+            print(e)
+        finally:
+            cur.close()
+            conn.close()
+        return render_template('/user_mgr_vid.html', res_vids=res_vids)
+    else:
+        return '非法访问'
+
+#管理员处理投稿审核
+@app.route('/mgr_handle_vid',methods=['post'])
+def mgr_handle_vid():
+    vid = int(request.form.get('vid'))
+    btn_val = request.form.get('btn_val')
+    vstatus = 0 if btn_val == '通过' else 3
+    print(vstatus)
+
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+
+        cur.execute("update video set vstatus = %d where vid = %d"%(vstatus, vid))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(e)
+        return '操作失败'
+    finally:
+        cur.close()
+        conn.close()
+    return redirect(url_for('req_manager_visits'))
+    
 
 # 管理员处理举报信息
 @app.route('/req_mgr_reports', methods=['GET'])

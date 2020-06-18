@@ -4,8 +4,81 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <script src="../static/js/jquery-3.4.1.min.js"></script>
+    <style>
+        div{
+            font-size: 0.9rem;
+            color: #636260e3;
+            font-family: 'Courier New', Courier, monospace;
+            display: inline;
+            padding-left: 10px;
+        }
+        a{
+            text-decoration: none;
+            font-family: kaiti,Arial, Helvetica, sans-serif;
+            font-size: 0.9rem;
+            color: rgb(168, 168, 214);
+            }
+        input[type='button']{
+            outline: none;
+            letter-spacing: 2px;
+            font-size: 0.9rem;
+            font-family: kaiti,'Courier New', Courier, monospace;
+            height: 25px;
+            border: none;
+
+        }
+        input[type='button']:hover{
+            background-color: rgb(141, 252, 194);
+        }
+    </style>
+    <script>
+        $(document).ready(function(){
+
+            $("input[type='button']").click(function(){
+
+                var btn_val = $(this).val();
+                var cfm_msg;
+
+                if(btn_val == "通过")
+                    cfm_msg = "确定通过吗？";
+                else
+                    cfm_msg = "确定退回吗？";
+                
+                var btn_flag = confirm(cfm_msg);
+                
+                // 为了确定通过的是哪一条记录，将vid设置为class属性
+                var vid = $(this).attr('class');
+                if(btn_flag == true){
+                    $.ajax({
+                        url:"/mgr_handle_vid",
+                        data:{'vid':vid,'btn_val':btn_val},
+                        type:'post',
+                        success:function(msg){
+                            alert('审核成功');
+                            $('body').html(msg)
+                        }
+                    });
+                }else{
+                    return;
+                }
+
+
+            });
+        });
+    </script>
 </head>
 <body>
-    {{ msg }}
+    {% if res_vids %}
+        {% for res_vid in res_vids %}
+            <div><a href="/video?vid={{ res_vid[0] }}" target="_blank" title="查看视频详情">视频详情</a></div>
+            <div><a href="/goto_userCenter?uid={{ res_vid[1] }}" target="_blank" title="查看用户个人信息">上传用户:{{ res_vid[2] }}</a></div>
+            <div>上传时间:{{ res_vid[3] }}</div>
+            <div><input type="button" value="通过" class="{{ res_vid[0] }}"><input type="button" value="退回" class="{{ res_vid[0] }}"></div><br>
+            <div><hr></div>
+        {% endfor %}
+    {% else %}
+        <div>暂无待审核投稿</div>
+    {% endif %}
 </body>
 </html>

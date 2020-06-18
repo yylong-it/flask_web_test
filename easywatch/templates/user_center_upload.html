@@ -4,8 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        div{
+            display: inline;
+            font-size: 1.0rem;
+            font-family: kaiti,Arial, Helvetica, sans-serif;
+            padding-left: 20px;
+        }
+        #none_div{
+            margin-top: 40%;
+            padding-left: 45%;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            color: rgba(153, 151, 148, 0.432);
+        }
+    </style>
 </head>
 <body>
-    {{ msg }}
+    {% if videos %}
+        {% for video in videos %}
+            {% if video[2] == 0 or log_right ==1 or u_flag == 0 %}
+                <div><a href="/video?vid={{ video[0] }}" target="_blank">查看视频</a></div>
+                {% if video[2] == 1 %}
+                    <div>视频违规:封禁</div>
+                {% elif video[2] == 2 %}
+                    <div>视频状态:审核中</div>
+                {% elif video[2] ==3 %}
+                    <div>视频状态:被退回</div>
+                {% else %}
+                    <div>视频状态:正常</div>
+                {% endif %}
+                <div>上传时间:{{ video[1] }}</div>
+                <hr>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <div id="none_div">主人什么都没留下</div>
+    {% endif %}
 </body>
 </html>
