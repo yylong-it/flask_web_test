@@ -4,8 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        .u_sub{
+            display: inline;
+            font-size: 0.9rem;
+            font-family: kaiti,Arial, Helvetica, sans-serif;
+            letter-spacing: 2px;
+            padding-left: 10px;
+        }
+    </style>
 </head>
 <body>
-    {{ msg }}
+    {% if not msg %}
+        {% if user_subs %}
+            {% for sub in user_subs %}
+                {% if sub[3] == 0 %}
+                    <div class="u_sub">UID:{{ sub[0] }}</div>
+                    <div class="u_sub">用户名:{{ sub[1] }}</div>
+                    <div class="u_sub">订阅时间:{{ sub[2] }}</div><br>
+                {% else %}
+                    {% if log_right == 1 %}
+                        <div class="u_sub">UID:{{ sub[0] }}</div>
+                        <div class="u_sub">用户名:{{ sub[1] }}</div>
+                        <div class="u_sub">订阅时间:{{ sub[2] }}</div>
+                        <div class="u_sub">已取消订阅</div><br>
+                    {% endif %}
+                {% endif %}
+                <hr>
+            {% endfor %}
+        {% else %}
+            <div>主人比较懒，尚无订阅消息</div>
+        {% endif %}
+    {% else %}
+        <div>{{ msg }}</div>
+    {% endif %}
 </body>
 </html>

@@ -1,0 +1,117 @@
+#video_div{
+    width: 60%;
+    height: 60%;
+    min-width: 500px;
+    min-height: 600px;
+    margin-left: 10%;
+    margin-top: 100px;
+}
+
+#comment_p{
+    font-size: 1.5rem;
+    color: rgb(156, 116, 67);
+    font-weight: 800;
+}
+
+img{
+    width: 55px;
+    height: 55px;
+}
+#comment_div{
+    margin-left: 10%;
+    margin-top: 30px;  
+}
+a{
+    text-decoration: none;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: rgb(95, 116, 103);
+}
+#comment{
+    width: 500px;
+    height: 70px;
+    outline: none;
+    border-radius: 5px;
+    border-color: rgb(91, 219, 176);
+    border: 2;
+    padding: 2px;
+    font-size: 1.3rem;
+}
+#submit{
+    width: 90px;
+    height: 70px;
+    border-radius: 10px;
+    border-style: none;
+    outline: none;
+    font-size: 1.3rem;
+    color: rgb(15, 15, 15);
+    background-color: rgb(184, 182, 181);
+    font-family: 宋体;
+}
+#submit:hover{
+    background-color: rgb(177, 236, 169);
+}
+span{
+    display: block;
+    padding-bottom: 20px;
+    margin-left: 30px;
+    font-size: 1.3rem;
+    font-weight: 400;
+    font-family: 楷体;
+    color: rgb(14, 13, 13);
+}
+#comm_cnt{
+   display: inline;
+   color: rgb(17, 192, 40);
+   font-size: 1.4rem;
+   font-weight: 300;
+   margin: 5px;
+   font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+img{
+   width: 40px;
+   height: 40px;
+}
+#v_left{
+   width: 60%;
+   height: 60px;
+   float: left;
+}
+#v_title{
+   font-size: 1.2rem;
+   font-family: kaiti,Arial, Helvetica, sans-serif;
+   letter-spacing: 2px;
+}
+#v_vid,#div_vid{
+   font-size: 0.8rem;
+   color: gray;
+   font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+   padding-top: 3px;
+   display: inline;
+}
+#u_center{
+   float: left;
+   width:30%;
+   height: 60px;
+   text-align: center;
+}
+#u_id,#uid_div{
+   font-size: 0.8rem;
+   font-family: kaiti,Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+   color: hotpink;
+   padding-top: 3px;
+   display: inline;
+}
+#u_name{
+    color:rgb(53, 51, 51);
+    font-family: kaiti,Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+}
+#op_right{
+   width:10%;
+   height: 60px;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+}

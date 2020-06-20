@@ -61,8 +61,8 @@
         <a href="/req_user_good?uid={{ uid }}" target="iframe_msg" class="center_msg">爱心点赞</a><br><br>
         <a href="req_user_coll?uid={{ uid }}" target="iframe_msg" class="center_msg">最爱收藏</a><br><br>
         <a href="/req_user_upload?uid={{ uid }}" target="iframe_msg" class="center_msg">视频投稿</a><br><br>
-        <a href="/req_user_sub?uid={{ uid }}" target="iframe_msg" class="center_msg">关注列表</a><br><br>
-        <a href="/req_user_fans?uid={{ uid }}" target="iframe_msg" class="center_msg">粉丝列表</a><br><br>
+        <a href="/req_subs_fans?uid={{ uid }}&type=getsubs" target="iframe_msg" class="center_msg">关注列表</a><br><br>
+        <a href="/req_subs_fans?uid={{ uid }}&type=getfans" target="iframe_msg" class="center_msg">粉丝列表</a><br><br>
         <a href="/req_user_visits?uid={{ uid }}" target="iframe_msg" class="center_msg">浏览记录</a><br><br>
         <!-- 仅有自己可见-->
         {% if uid_same==1 %}

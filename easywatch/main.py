@@ -33,7 +33,7 @@ def before_request():
     # 如果访问登录注册或者是静态资源，放行
     allow_path = ('/', '/goto_login', '/goto_reg', '/user_login', '/regist', '/first_page','/favicon.ico', '/sortByType',
                     '/uname_repeat_verify')
-    if request.path in allow_path or re.match(r'^(/static/)|(/video/)*[.][a-z]*$', request.path):
+    if request.path in allow_path or re.match(r'^/static/[a-z0-9.A-Z/_-]*$', request.path):
         return None
     user = session.get('user')
     if user:
@@ -61,7 +61,6 @@ def login():
     user_name = request.form.get('user_name')
     user_pass = request.form.get('user_pass')
     msg = "登录失败"
-    print(user_name,user_pass)
 
     try:
         conn = get_conn()
@@ -70,7 +69,6 @@ def login():
         # 用户状态正常的用户才允许登录
         cur.execute("select uid,uname,user_right from user where uname='%s' and upass='%s' and user_status=0" % (user_name, user_pass))
         user_info = cur.fetchone()
-        print(user_info)
 
     except Exception as e:
         print(e)
@@ -141,7 +139,6 @@ def regist():
         # 注册成功后需要自动登录，查询用户ID，用户权限,故需要做用户名唯一性校验
         cur.execute("select uid ,uname,user_right from user where uname='%s'"%(reg_name,))
         user_info = cur.fetchone()
-        print(user_info)
         
 
         # 将用户信息存入session中
@@ -184,13 +181,11 @@ def first_page():
         conn = get_conn()
         cur = conn.cursor()
         page_num = int(session.get('page_num'))
-        print(page_num, type(page_num))
         # 首页自动加载视频状态正常的10条视频,暂且根据点赞数降序筛选
         cur.execute('select vid,vtitle,vcoverurl from video where vstatus=0 order by vup desc limit %d,10'%(10*page_num,))
         page_num += 1
         session['page_num'] = page_num
         covers = cur.fetchall()
-        print(covers)
     except Exception as e:
         print(e)
     finally:
@@ -209,7 +204,6 @@ def sort_by_type():
         cur.execute("select vid,vtitle,vcoverurl from video where vtype=%s and vstatus=0" %
                     vtype)
         covers = cur.fetchall()
-        print(covers)
     except Exception as e:
         print(e)
     finally:
@@ -230,13 +224,11 @@ def video():
         # 查询视频信息
         cur.execute('select * from video where vid=%d' % vid)
         video = cur.fetchone()
-        print(video)
 
         # 查询评论信息
         cur.execute('select * from tb_comment where vid=%d' % vid)
         comments = cur.fetchall()
         comment_count = len(comments)
-        print(comments)
 
     except Exception as e:
         print(e)
@@ -275,7 +267,6 @@ def upload():
         video_url = os.path.join("../static/video/content/", video_name)
         video.save(video_path)
 
-        print(vtitle, cover_path, vtype, video_path)
         conn = get_conn()
         cur = conn.cursor()
 
@@ -336,7 +327,6 @@ def ajax_vinfo():
         finally:
             cur.close()
             conn.close()
-    print(err_code)
     return err_code
 
 
@@ -346,7 +336,6 @@ def req_good_coll():
     vid = int(request.form.get('vid'))
     uid = session.get('user')[0]
     req_path = request.form.get('req_stat')
-    print(req_path)
     try:
         conn = get_conn()
         cur = conn.cursor()
@@ -400,11 +389,9 @@ def req_good_coll():
 # 添加评论信息
 @app.route('/add_comment', methods=['POST'])
 def add_comment():
-    print("hello")
     vid = request.form.get('vid')
     vid = int(vid)
     comment = request.form.get('comment')
-    print(vid, comment)
 
     # 从session中获取当前用户的id和用户名信息、
     user_info = session.get('user')
@@ -576,17 +563,102 @@ def req_user_upload():
         conn.close()
     return render_template('/user_center_upload.html', videos=vidoes,log_right=log_right,u_flag=u_flag)
 
-# 处理请求关注列表的请求
-@app.route('/req_user_sub', methods=['GET'])
-def req_user_sub():
-    msg = "我的关注列表"
-    return render_template('/user_center_sub.html', msg=msg)
+# 处理请求订阅与粉丝关系列表的请求
+@app.route('/req_subs_fans',methods=['GET'])
+def req_subs_fans():
+    req_type = request.args.get('type')
+    log_info = session.get('user')
 
-# 处理请求粉丝列表的请求
-@app.route('/req_user_fans', methods=['GET'])
-def req_user_fans():
-    msg = "我的粉丝列表"
-    return render_template('/user_center_fans.html', msg=msg)
+    try:
+        conn = get_conn()
+        cur = conn.cursor()
+
+        # 自动加载订阅信息
+        if req_type == 'getsub_stat':
+            up_uid = int(request.args.get('uid'))
+            if log_info:
+                sub_id = log_info[0]
+                cur.execute("select sub_status from tb_subs_fans where sub_uid =%d and up_uid =%d "%(sub_id,up_uid))
+                res = cur.fetchone()
+
+                if res:
+                    if res[0] == 0:
+                        return 'sub'
+                    elif res[0] == 1:
+                        return 'usedsub'
+                    else:
+                        return 'error'
+                else:
+                    return 'unsub'
+            else:
+                return 'unlogin'
+        
+        if req_type == 'reqsub':
+            sub_stat = request.args.get('sub_stat')
+            up_id = int(request.args.get('uid'))
+            up_name = request.args.get('uname')
+            uid = session.get('user')[0]
+            uname = session.get('user')[1]
+            if up_id == uid:
+                return '不可订阅自己'
+            if sub_stat == 'unsub':
+                cur.execute("insert into tb_subs_fans(sub_uid,sub_uname,up_uid,up_uname) values(%d,'%s',%d,'%s')"%(uid,uname,up_id,up_name))
+            elif sub_stat == 'usedsub':
+                cur.execute("update tb_subs_fans set sub_status = 0,sub_time=CURRENT_TIMESTAMP where sub_uid =%d and up_uid=%d"%(uid,up_id))
+            else:
+                return '错误'
+            conn.commit()
+            return '订阅成功'
+
+
+        if req_type == 'delsub':
+            up_id = int(request.args.get('uid'))
+            uid = session.get('user')[0]
+            cur.execute("update tb_subs_fans set sub_status = 1,sub_time=CURRENT_TIMESTAMP where sub_uid =%d and up_uid=%d"%(uid,up_id))
+            conn.commit()
+            return '取消订阅成功'
+
+        if req_type == 'getsubs':
+            uid = int(request.args.get('uid'))
+            log_id = session.get('user')[0]
+            log_right = session.get('user')[2]
+
+            cur.execute("select u_sublist from tb_pri_setting where uid=%d"%uid)
+            res = cur.fetchone()
+            # res为none，表明未设置过隐私，此时应为默认可见
+            sub_flag = 0 if res is None else res[0]
+            # 权限公开（0）,未设置none，或者登录用户为管理员或者自己，才可查看
+            if sub_flag == 0 or log_id == uid or log_right==1:
+                cur.execute("select up_uid,up_uname,sub_time,sub_status from tb_subs_fans where sub_uid = %d"%uid)
+                user_subs = cur.fetchall()
+                return render_template('/user_center_sub.html',user_subs=user_subs,log_right=log_right)
+            else:
+                return render_template('/user_center_sub.html',msg="抱歉，该主人设置了不开放")
+
+        if req_type == 'getfans':
+            uid = int(request.args.get('uid'))
+            log_id = session.get('user')[0]
+            log_right = session.get('user')[2]
+
+            cur.execute("select u_fans from tb_pri_setting where uid=%d"%uid)
+            res = cur.fetchone()
+            # res为none，表明未设置过隐私，此时应为默认可见
+            fans_flag = 0 if res is None else res[0]
+            # 权限公开（0）,未设置none，或者登录用户为管理员或者自己，才可查看
+            if fans_flag == 0 or log_id == uid or log_right==1:
+                cur.execute("select sub_uid,sub_uname,sub_time,sub_status from tb_subs_fans where up_uid = %d"%uid)
+                user_fans = cur.fetchall()
+                return render_template('/user_center_fans.html',user_fans=user_fans,log_right=log_right)
+            else:
+                return render_template('/user_center_fans.html',msg="抱歉，该主人设置了不开放")
+
+    except Exception as e:
+        print(e)
+    finally:
+        cur.close()
+        conn.close()
+
+    return '404'
 
 # 处理查看浏览记录表
 @app.route('/req_user_visits', methods=['GET'])
@@ -620,7 +692,6 @@ def mgr_handle_vid():
     vid = int(request.form.get('vid'))
     btn_val = request.form.get('btn_val')
     vstatus = 0 if btn_val == '通过' else 3
-    print(vstatus)
 
     try:
         conn = get_conn()

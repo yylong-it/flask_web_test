@@ -5,7 +5,7 @@
 #div_head{
     width: 100%;
     height: 50px;
-    background-image: url("../images/bg_title.gif");
+    background-image: url("../images/index/bg_title.gif");
     display: flex;
     align-items: center;
     justify-content: center;
@@ -15,7 +15,7 @@
     width: 100%;
     height: 120px;
     font-size: 0;  /* 去除两个input之间的空隙 */
-    background: url('../images/index_title.jpg') no-repeat;
+    background: url('../images/index/index_title.jpg') no-repeat;
     background-size: cover;
     display: flex;
     align-items: center;

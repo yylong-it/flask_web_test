@@ -4,8 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        .u_fan{
+            display: inline;
+            font-size: 0.9rem;
+            font-family: kaiti,Arial, Helvetica, sans-serif;
+            letter-spacing: 2px;
+            padding-left: 10px;
+        }
+    </style>
 </head>
 <body>
-    {{ msg }}
+    {% if not msg %}
+        {% if user_fans %}
+            {% for fan in user_fans %}
+                {% if fan[3] == 0 %}
+                    <div class="u_fan">UID:{{ fan[0] }}</div>
+                    <div class="u_fan">用户名:{{ fan[1] }}</div>
+                    <div class="u_fan">订阅时间:{{ fan[2] }}</div><br>
+                {% else %}
+                    {% if log_right == 1 %}
+                        <div class="u_fan">UID:{{ fan[0] }}</div>
+                        <div class="u_fan">用户名:{{ fan[1] }}</div>
+                        <div class="u_fan">订阅时间:{{ fan[2] }}</div>
+                        <div class="u_fan">取消订阅</div><br>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <div>主人比较惨，尚无粉丝订阅</div>
+        {% endif %}
+    {% else %}
+        <div>{{ msg }}</div>
+    {% endif %}
 </body>
 </html>
