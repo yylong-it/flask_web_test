@@ -734,10 +734,21 @@ def req_user_privacy():
         conn =get_conn()
         cur = conn.cursor()
         # 查询该登录用户是否设置过隐私设置
-        cur.execute("select u_info from tb_pri_setting where uid=%d"%log_id)
+        cur.execute("select * from tb_pri_setting where uid=%d"%log_id)
         exist_flag = cur.fetchone()
 
         #分发设置
+
+        #自动加载获取隐私设置
+        if req_path == 'get_settings':
+            if exist_flag:
+                setting_key = ('uid','u_info','u_comm','u_good','u_coll','u_subs','u_fans','u_log')
+                setting_dict = dict(zip(setting_key, exist_flag))
+                setting_json = json.dumps(setting_dict)
+                return setting_json
+            else:
+                return 'default'
+
         #请求设置个人信息
         if req_path == "u_info":
             new_value = request.args.get("new_info")
@@ -817,6 +828,48 @@ def req_user_privacy():
                 else:
                     # 首次设置，做插入操作
                     cur.execute("insert into tb_pri_setting(uid,u_coll) values(%d,1)"%(log_id))
+            else:
+                return "设置出错"    
+            conn.commit()
+            return "设置成功"
+
+        # 请求设置订阅设置
+        if req_path == "u_subs":
+            new_value = request.args.get("new_subs")
+            if new_value == "show":
+                # 设置查询不为空，说明已经设置过了
+                if exist_flag:
+                    cur.execute("update tb_pri_setting set u_sublist=0 where uid=%d"%log_id)
+                else:
+                    # 首次设置，做插入操作
+                    cur.execute("insert into tb_pri_setting(uid,u_sublist) values(%d,0)"%(log_id))
+            elif new_value == "hide":
+                if exist_flag:
+                    cur.execute("update tb_pri_setting set u_sublist=1 where uid=%d"%log_id)
+                else:
+                    # 首次设置，做插入操作
+                    cur.execute("insert into tb_pri_setting(uid,u_sublist) values(%d,1)"%(log_id))
+            else:
+                return "设置出错"    
+            conn.commit()
+            return "设置成功"
+
+        #请求设置粉丝设置
+        if req_path == "u_fans":
+            new_value = request.args.get("new_fans")
+            if new_value == "show":
+                # 设置查询不为空，说明已经设置过了
+                if exist_flag:
+                    cur.execute("update tb_pri_setting set u_fans=0 where uid=%d"%log_id)
+                else:
+                    # 首次设置，做插入操作
+                    cur.execute("insert into tb_pri_setting(uid,u_fans) values(%d,0)"%(log_id))
+            elif new_value == "hide":
+                if exist_flag:
+                    cur.execute("update tb_pri_setting set u_fans=1 where uid=%d"%log_id)
+                else:
+                    # 首次设置，做插入操作
+                    cur.execute("insert into tb_pri_setting(uid,u_fans) values(%d,1)"%(log_id))
             else:
                 return "设置出错"    
             conn.commit()

@@ -71,6 +71,7 @@ span{
 img{
    width: 40px;
    height: 40px;
+   cursor: pointer;
 }
 #v_left{
    width: 60%;
